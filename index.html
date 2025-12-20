@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Bingo Casino</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Optimized for Telegram Mini App */
+        :root {
+            --primary: #00b4d8;
+            --secondary: #0077b6;
+            --accent: #ffd700;
+            --danger: #ff4b4b;
+            --success: #4CAF50;
+            --background: #0f2027;
+            --card-bg: #1a1a2e;
+            --text-light: #90e0ef;
+            --text-lighter: #caf0f8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            max-width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            padding: 20px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.8rem;
+            color: var(--accent);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--primary), var(--text-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 180, 216, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(0, 180, 216, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+        
+        .stake-info {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin: 25px 0;
+            border: 2px solid var(--accent);
+        }
+        
+        .stake-amount {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 10px 0;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .stake-label {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+        
+        .prize-pool {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        
+        .prize-amount {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .start-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .timer-container {
+            background: rgba(255, 75, 75, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid var(--danger);
+            animation: pulse 2s infinite;
+        }
+        
+        .timer-label {
+            font-size: 1rem;
+            color: #ff9999;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--danger);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .btn-play {
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 10px 25px rgba(0, 180, 216, 0.4);
+            margin-top: 20px;
+        }
+        
+        .btn-play:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 180, 216, 0.6);
+        }
+        
+        .btn-play:active {
+            transform: translateY(-1px);
+        }
+        
+        .rules {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .rules h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rules ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .rules li {
+            margin-bottom: 10px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .rules li:before {
+            content: "•";
+            color: var(--primary);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 180, 216, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .app-container {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .logo-icon {
+                font-size: 2.2rem;
+            }
+            
+            .stake-amount {
+                font-size: 2.8rem;
+            }
+            
+            .timer-display {
+                font-size: 2rem;
+            }
+            
+            .btn-play {
+                padding: 18px;
+                font-size: 1.3rem;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .header {
+                margin-bottom: 15px;
+            }
+            
+            .stake-info {
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .timer-container {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .rules {
+                margin-top: 15px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-dice-d20 logo-icon"></i>
+                <h1>TELEGRAM<br>BINGO CASINO</h1>
+            </div>
+            <p class="subtitle">Play & Win Real Prizes • 500 Cards Available</p>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="activePlayers">0</div>
+                <div class="stat-label">Players</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="cardsTaken">0</div>
+                <div class="stat-label">Cards Taken</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="prizePool">0</div>
+                <div class="stat-label">Prize Pool</div>
+            </div>
+        </div>
+        
+        <div class="stake-info">
+            <div class="stake-label">Entry Stake</div>
+            <div class="stake-amount">10 BIRR</div>
+            <div class="prize-pool">
+                Prize Pool: <span class="prize-amount" id="prizePoolAmount">0 BIRR</span>
+                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.6;">
+                    80% of total stakes distributed to winners
+                </div>
+            </div>
+        </div>
+        
+        <div class="start-section">
+            <div class="timer-container" id="gameTimer">
+                <div class="timer-label">
+                    <i class="fas fa-clock"></i>
+                    NEXT GAME STARTS IN
+                </div>
+                <div class="timer-display" id="timerDisplay">01:00</div>
+            </div>
+            
+            <button class="btn-play" id="playBtn">
+                <i class="fas fa-play-circle"></i>
+                JOIN GAME FOR 10 BIRR
+            </button>
+        </div>
+        
+        <div class="rules">
+            <h3><i class="fas fa-info-circle"></i> How to Win</h3>
+            <ul>
+                <li>Choose 1-2 bingo cards (numbered 1-500)</li>
+                <li>Numbers are called every 5 seconds</li>
+                <li>Complete any line (horizontal, vertical, diagonal)</li>
+                <li>Click BINGO when you have a valid line</li>
+                <li>Win 80% of the total prize pool</li>
+                <li>20% goes to house for platform maintenance</li>
+                <li>Invalid BINGO claims result in disqualification</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading Game...</div>
+    </div>
+
+    <script src="js/game-state.js"></script>
+    <script src="js/telegram-api.js"></script>
+    <script>
+        // Telegram Web App initialization
+        const tg = window.Telegram.WebApp;
+        
+        // Initialize Telegram Web App for mobile
+        tg.expand();
+        tg.enableClosingConfirmation();
+        tg.setBackgroundColor('#0f2027');
+        tg.setHeaderColor('#00b4d8');
+        
+        // Initialize game state
+        const gameState = {
+            stake: 10, // 10 BIRR
+            totalPlayers: 0,
+            cardsTaken: 0,
+            totalPrizePool: 0,
+            gameTimer: 60, // 1 minute
+            timerInterval: null,
+            isGameActive: false,
+            playerJoined: false,
+            playerId: null,
+            playerName: 'Telegram User',
+            selectedCards: []
+        };
+        
+        // DOM elements
+        const activePlayersEl = document.getElementById('activePlayers');
+        const cardsTakenEl = document.getElementById('cardsTaken');
+        const prizePoolEl = document.getElementById('prizePool');
+        const prizePoolAmountEl = document.getElementById('prizePoolAmount');
+        const timerDisplayEl = document.getElementById('timerDisplay');
+        const playBtn = document.getElementById('playBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const gameTimerEl = document.getElementById('gameTimer');
+        
+        // Initialize game
+        function initGame() {
+            // Get user data from Telegram
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                gameState.playerName = user.first_name || 'Telegram User';
+                if (user.last_name) gameState.playerName += ' ' + user.last_name;
+                gameState.playerId = user.id.toString();
+            }
+            
+            // Load existing game state
+            loadGameState();
+            
+            // Start game timer (shared between all players)
+            startGameTimer();
+            
+            // Update displays
+            updateDisplays();
+            
+            // Check if player has already joined
+            checkPlayerStatus();
+        }
+        
+        function loadGameState() {
+            // In production, this would fetch from your backend
+            // For now, simulate with localStorage
+            const savedGame = localStorage.getItem('bingoGameState');
+            if (savedGame) {
+                const data = JSON.parse(savedGame);
+                gameState.totalPlayers = data.totalPlayers || 0;
+                gameState.cardsTaken = data.cardsTaken || 0;
+                gameState.totalPrizePool = data.totalPrizePool || 0;
+                gameState.gameTimer = data.gameTimer || 60;
+                
+                // Check if player has already joined this game
+                const playerData = localStorage.getItem(`player_${gameState.playerId}`);
+                if (playerData) {
+                    const player = JSON.parse(playerData);
+                    gameState.playerJoined = player.joined || false;
+                    gameState.selectedCards = player.selectedCards || [];
+                }
+            }
+        }
+        
+        function startGameTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            updateTimerDisplay();
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.gameTimer--;
+                updateTimerDisplay();
+                
+                // Save game state
+                saveGameState();
+                
+                if (gameState.gameTimer <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    startGame();
+                }
+                
+                // Visual effects when time is low
+                if (gameState.gameTimer <= 10) {
+                    gameTimerEl.style.animation = 'pulse 0.5s infinite';
+                } else {
+                    gameTimerEl.style.animation = 'pulse 2s infinite';
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.gameTimer / 60);
+            const seconds = gameState.gameTimer % 60;
+            timerDisplayEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function updateDisplays() {
+            activePlayersEl.textContent = gameState.totalPlayers;
+            cardsTakenEl.textContent = gameState.cardsTaken;
+            prizePoolEl.textContent = gameState.totalPrizePool;
+            
+            // Calculate prize pool: stake * players * 0.8 (80%)
+            const totalStakes = gameState.totalPlayers * gameState.stake;
+            const prizePool = Math.floor(totalStakes * 0.8);
+            gameState.totalPrizePool = prizePool;
+            prizePoolAmountEl.textContent = `${prizePool} BIRR`;
+        }
+        
+        function checkPlayerStatus() {
+            if (gameState.playerJoined) {
+                playBtn.innerHTML = '<i class="fas fa-check-circle"></i> ALREADY JOINED';
+                playBtn.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                playBtn.disabled = true;
+            }
+        }
+        
+        function joinGame() {
+            if (gameState.playerJoined) {
+                alert('You have already joined this game!');
+                return;
+            }
+            
+            // Show loading
+            loadingOverlay.classList.add('active');
+            loadingText.textContent = 'Processing Payment...';
+            
+            // Simulate payment processing
+            setTimeout(() => {
+                // Add player to game
+                gameState.totalPlayers++;
+                gameState.playerJoined = true;
+                
+                // Update player data
+                const playerData = {
+                    id: gameState.playerId,
+                    name: gameState.playerName,
+                    joined: true,
+                    selectedCards: [],
+                    stakePaid: true,
+                    timestamp: Date.now()
+                };
+                
+                // Save data
+                localStorage.setItem(`player_${gameState.playerId}`, JSON.stringify(playerData));
+                saveGameState();
+                
+                // Update displays
+                updateDisplays();
+                
+                // Navigate to card selection
+                navigateToCardSelection();
+            }, 1500);
+        }
+        
+        function startGame() {
+            // Only start if there are players
+            if (gameState.totalPlayers === 0) {
+                // Reset timer for next attempt
+                gameState.gameTimer = 60;
+                startGameTimer();
+                return;
+            }
+            
+            // Navigate all players to card selection
+            // In production, this would be handled by backend notifications
+            // For now, check if current player has joined
+            if (gameState.playerJoined && gameState.selectedCards.length === 0) {
+                navigateToCardSelection();
+            }
+        }
+        
+        function navigateToCardSelection() {
+            loadingText.textContent = 'Loading Card Selection...';
+            
+            setTimeout(() => {
+                // Save current game state
+                saveGameState();
+                
+                // Navigate to card selection page
+                window.location.href = 'choose-cards.html';
+            }, 1000);
+        }
+        
+        function saveGameState() {
+            const gameData = {
+                totalPlayers: gameState.totalPlayers,
+                cardsTaken: gameState.cardsTaken,
+                totalPrizePool: gameState.totalPrizePool,
+                gameTimer: gameState.gameTimer,
+                stake: gameState.stake,
+                lastUpdated: Date.now()
+            };
+            
+            localStorage.setItem('bingoGameState', JSON.stringify(gameData));
+            
+            // Send to backend (simulated)
+            if (tg.sendData) {
+                tg.sendData(JSON.stringify({
+                    type: 'game_update',
+                    data: gameData
+                }));
+            }
+        }
+        
+        // Event Listeners
+        playBtn.addEventListener('click', joinGame);
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+        
+        // Handle visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // Page became visible, refresh data
+                loadGameState();
+                updateDisplays();
+            }
+        });
+    </script>
+</body>
+</html>
