@@ -2,87 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Bingo Casino</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Bingo - 10 BIRR Stake</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
     <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/index.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body class="index-page">
-    <div class="app-container">
-        <div class="header">
+<body class="lobby-page">
+    <div class="lobby-container">
+        <!-- Game Header -->
+        <div class="game-header">
             <div class="logo">
-                <i class="fas fa-dice-d20 logo-icon"></i>
-                <h1>TELEGRAM BINGO CASINO</h1>
+                <div class="logo-icon">🎯</div>
+                <h1>Telegram Bingo</h1>
             </div>
-            <p class="subtitle">Multiplayer Bingo Game with up to 500 Players</p>
-        </div>
-
-        <div class="player-stats">
-            <div class="stat-card">
-                <div class="stat-value" id="currentPlayers">0</div>
-                <div class="stat-label">Current Players</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="cardsTaken">0</div>
-                <div class="stat-label">Cards Taken</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="timeLeft">60</div>
-                <div class="stat-label">Seconds Left</div>
+            <div class="stake-display">
+                <div class="stake-label">Entry Stake</div>
+                <div class="stake-amount">10 BIRR</div>
             </div>
         </div>
 
-        <div class="game-info">
-            <div class="info-card">
-                <i class="fas fa-layer-group"></i>
-                <h3>Choose Your Cards</h3>
-                <p>Select up to 2 bingo cards from 500 available. Each card is uniquely numbered.</p>
+        <!-- Game Timer -->
+        <div class="game-timer-section">
+            <div class="timer-label">Next Game Starts In</div>
+            <div class="timer-display" id="gameTimer">01:00</div>
+            <div class="timer-subtext">Card selection available during this time</div>
+        </div>
+
+        <!-- Real-Time Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="realPlayers">0</div>
+                    <div class="stat-label">Real Players</div>
+                </div>
             </div>
-            <div class="info-card">
-                <i class="fas fa-bullhorn"></i>
-                <h3>Live Number Calling</h3>
-                <p>Watch as numbers are called every 5 seconds with professional animations.</p>
+            <div class="stat-card">
+                <div class="stat-icon">🎴</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="cardsTaken">0/500</div>
+                    <div class="stat-label">Cards Taken</div>
+                </div>
             </div>
-            <div class="info-card">
-                <i class="fas fa-trophy"></i>
-                <h3>Win Prizes</h3>
-                <p>Be the first to complete a line (horizontal, vertical, or diagonal) and win!</p>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="prizePool">0 BIRR</div>
+                    <div class="stat-label">Prize Pool</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-content">
+                    <div class="stat-value">80%</div>
+                    <div class="stat-label">To Winner</div>
+                </div>
             </div>
         </div>
 
-        <div class="start-section">
-            <div class="timer-display">
-                <div class="timer-label">Card Selection Time Limit</div>
-                <div class="timer" id="mainTimer">01:00</div>
+        <!-- Player Info -->
+        <div class="player-section">
+            <div class="player-card">
+                <div class="player-avatar" id="playerAvatar">T</div>
+                <div class="player-info">
+                    <div class="player-name" id="playerName">Telegram User</div>
+                    <div class="player-balance">Balance: <span id="playerBalance">100</span> BIRR</div>
+                </div>
             </div>
-            
-            <button class="btn-start" id="startGameBtn">
-                <i class="fas fa-play-circle"></i>
-                START CARD SELECTION
+            <div class="player-status">
+                <div class="status-label">Your Status</div>
+                <div class="status-value" id="playerStatus">Ready to Play</div>
+            </div>
+        </div>
+
+        <!-- Main Action Button -->
+        <div class="action-section">
+            <button class="play-button" id="playButton">
+                <span class="play-icon">▶</span>
+                <span class="play-text">PLAY NOW - 10 BIRR</span>
+                <span class="play-subtext">Select 1-2 Cards</span>
             </button>
+            
+            <div class="commission-notice">
+                <div class="commission-label">Commission Structure</div>
+                <div class="commission-breakdown">
+                    <span>80% Prize Pool</span>
+                    <span>20% House</span>
+                </div>
+            </div>
         </div>
 
-        <div class="rules">
-            <h2><i class="fas fa-info-circle"></i> How to Play</h2>
-            <ul>
-                <li>Each player can choose up to 2 bingo cards</li>
-                <li>You have exactly 1 minute to select your cards</li>
-                <li>Once time is up, the game begins automatically</li>
-                <li>Numbers will be called every 5 seconds from 1-75</li>
-                <li>Mark numbers on your card as they're called</li>
-                <li>Complete any line (horizontal, vertical, or diagonal) to win</li>
-                <li>Click BINGO when you complete a line or use auto-detection</li>
-                <li>Winner will be announced with their Telegram username</li>
+        <!-- Game Rules -->
+        <div class="rules-section">
+            <h3>📋 Game Rules</h3>
+            <ul class="rules-list">
+                <li>✅ Each game starts every 60 seconds</li>
+                <li>✅ Entry fee: 10 BIRR per player</li>
+                <li>✅ Select 1-2 cards during countdown</li>
+                <li>✅ Cards have fixed, unchanging numbers</li>
+                <li>✅ Only REAL drawn numbers count</li>
+                <li>✅ False BINGO claims = disqualification</li>
+                <li>✅ Winner gets 80% of total prize pool</li>
+                <li>✅ Winner shown for 5 seconds only</li>
             </ul>
+        </div>
+
+        <!-- Recent Winners -->
+        <div class="winners-section">
+            <h3>🏆 Recent Winners</h3>
+            <div class="winners-list" id="winnersList">
+                <div class="winner-item">
+                    <span class="winner-name">Loading...</span>
+                    <span class="winner-prize">- BIRR</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="js/common.js"></script>
-    <script src="js/telegram-init.js"></script>
-    <script src="js/index.js"></script>
+    <script src="js/telegram.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/game-logic.js"></script>
 </body>
 </html>
