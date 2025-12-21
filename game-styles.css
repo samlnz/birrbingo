@@ -1,0 +1,617 @@
+/* Game Page Specific Styles */
+.game-page {
+    background: linear-gradient(135deg, #0c4a6e 0%, #075985 100%);
+    min-height: 100vh;
+}
+
+.game-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Game Stats */
+.game-stats {
+    display: flex;
+    gap: 25px;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat i {
+    color: var(--accent-color);
+}
+
+/* Called Numbers Section */
+.called-numbers-section {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 20px;
+    padding: 25px;
+    margin: 25px 0;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.section-header h2 {
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-audio {
+    background: var(--primary-color);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-audio:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+}
+
+/* Current Number Display */
+.current-number-display {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.number-ball {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: float 3s ease-in-out infinite;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.number-ball.current {
+    background: radial-gradient(circle at 30% 30%, #fbbf24, #d97706);
+    border: 5px solid #fbbf24;
+}
+
+.number-ball .letter {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.number-ball .number {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.number-info {
+    flex: 1;
+}
+
+.number-info h3 {
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+}
+
+#numberHistory {
+    color: #cbd5e1;
+    font-style: italic;
+}
+
+/* Recent Numbers */
+.recent-numbers h4 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.recent-balls {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    min-height: 80px;
+}
+
+.recent-ball {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #374151, #4B5563);
+    border: 3px solid var(--primary-color);
+    animation: popIn 0.5s ease;
+    position: relative;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.recent-ball .letter {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #fbbf24;
+}
+
+.recent-ball .number {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* Caller Controls */
+.caller-controls {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.btn-control {
+    padding: 15px 30px;
+    background: linear-gradient(135deg, var(--primary-color), #7C3AED);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    min-width: 180px;
+    justify-content: center;
+}
+
+.btn-control:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+}
+
+.btn-control:active {
+    transform: translateY(-1px);
+}
+
+/* Player Cards Section */
+.player-cards-section {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 20px;
+    padding: 25px;
+    margin: 25px 0;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin: 30px 0;
+}
+
+.bingo-card {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border-radius: 20px;
+    padding: 25px;
+    border: 3px solid var(--primary-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.card-header h3 {
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+/* Bingo Card Grid */
+.bingo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.grid-header {
+    display: contents;
+}
+
+.letter-cell {
+    background: var(--primary-color);
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.number-cell {
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.number-cell:hover:not(.marked):not(.free) {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.number-cell.marked {
+    background: linear-gradient(135deg, var(--secondary-color), #059669);
+    border-color: var(--secondary-color);
+    color: white;
+    animation: markCell 0.5s ease;
+}
+
+@keyframes markCell {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.number-cell.free {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    font-style: italic;
+}
+
+.number-cell.marked::after {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.winning-cell {
+    animation: winPulse 1s infinite;
+    box-shadow: 0 0 20px var(--secondary-color);
+}
+
+@keyframes winPulse {
+    0%, 100% { box-shadow: 0 0 20px var(--secondary-color); }
+    50% { box-shadow: 0 0 40px var(--secondary-color); }
+}
+
+/* Bingo Button */
+.bingo-button-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.btn-bingo {
+    padding: 25px 60px;
+    font-size: 2rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+    animation: bingoPulse 2s infinite;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+}
+
+@keyframes bingoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.btn-bingo:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 15px 40px rgba(251, 191, 36, 0.5);
+}
+
+.btn-bingo:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    animation: none;
+}
+
+/* Winners Board */
+.winners-board {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 20px;
+    padding: 25px;
+    margin-top: 30px;
+    border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+.winners-board h3 {
+    color: #fbbf24;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.winners-list {
+    min-height: 100px;
+}
+
+.no-winners {
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+}
+
+.no-winners i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #475569;
+}
+
+.winner-entry {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #fbbf24;
+    animation: slideInRight 0.5s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.winner-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-color), #7C3AED);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.winner-details h4 {
+    color: white;
+    margin-bottom: 5px;
+}
+
+.winner-details p {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.winner-prize-badge {
+    margin-left: auto;
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Winner Modal */
+.winner-modal {
+    max-width: 500px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    overflow: hidden;
+}
+
+.confetti-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.winner-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 40px 30px;
+}
+
+.winner-crown {
+    font-size: 4rem;
+    color: #fbbf24;
+    margin-bottom: 20px;
+    animation: crownBounce 1s ease infinite;
+}
+
+@keyframes crownBounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.winner-content h2 {
+    font-size: 3.5rem;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b, #d97706);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+}
+
+.winner-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 25px 0;
+    border: 2px solid var(--primary-color);
+}
+
+.winner-info i {
+    font-size: 3rem;
+    color: var(--primary-color);
+}
+
+.winner-info h3 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.winner-info p {
+    color: #cbd5e1;
+}
+
+.winner-message {
+    color: #fbbf24;
+    font-size: 1.2rem;
+    margin: 20px 0;
+}
+
+.winner-prize {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    padding: 15px 30px;
+    border-radius: 25px;
+    margin: 25px 0;
+    color: white;
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.winner-prize i {
+    font-size: 1.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .game-stats {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .stat {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .current-number-display {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .number-ball {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .caller-controls {
+        flex-direction: column;
+    }
+    
+    .btn-control {
+        min-width: 100%;
+    }
+    
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .bingo-grid {
+        gap: 5px;
+    }
+    
+    .letter-cell, .number-cell {
+        font-size: 1rem;
+        padding: 8px;
+    }
+    
+    .btn-bingo {
+        padding: 20px 40px;
+        font-size: 1.5rem;
+    }
+}
