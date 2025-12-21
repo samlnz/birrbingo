@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Bingo Cards</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .header-section {
+            background: linear-gradient(90deg, #16213e, #0f3460);
+            border-radius: 20px;
+            padding: 25px;
+            border: 3px solid #00b4d8;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-section:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #00b4d8, #0096c7, #00b4d8);
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .player-id {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 180, 216, 0.15);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(0, 180, 216, 0.3);
+        }
+
+        .player-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 180, 216, 0.4);
+        }
+
+        .player-details h2 {
+            color: #00b4d8;
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+        }
+
+        .player-details p {
+            color: #90e0ef;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .selection-timer {
+            background: rgba(255, 75, 75, 0.15);
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 2px solid #ff4b4b;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .timer-label {
+            color: #ff9999;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .timer-display {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #ff4b4b;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 20px rgba(255, 75, 75, 0.5);
+        }
+
+        .selection-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .progress-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #00b4d8;
+            margin-bottom: 5px;
+        }
+
+        .progress-label {
+            color: #90e0ef;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .progress-bar-container {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00b4d8, #0096c7);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        .cards-grid-section {
+            background: rgba(10, 10, 10, 0.7);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid #0f3460;
+        }
+
+        .section-title {
+            color: #00b4d8;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-number {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            color: #90e0ef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-number:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .card-number:hover:before {
+            transform: translateX(100%);
+        }
+
+        .card-number:hover {
+            transform: translateY(-5px) scale(1.05);
+            border-color: #00b4d8;
+            box-shadow: 0 10px 20px rgba(0, 180, 216, 0.3);
+            color: white;
+        }
+
+        .card-number.selected {
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            border-color: #90e0ef;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 180, 216, 0.5);
+            animation: selectedPulse 2s infinite;
+        }
+
+        .card-number.taken {
+            background: linear-gradient(135deg, #333, #222);
+            border-color: #666;
+            color: #666;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .card-number.taken:after {
+            content: '✗';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: rgba(255, 0, 0, 0.5);
+        }
+
+        .selected-cards-section {
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.3), rgba(22, 33, 62, 0.3));
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid #00b4d8;
+            margin-top: 20px;
+        }
+
+        .selected-cards {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .selected-card-display {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(0, 180, 216, 0.5);
+        }
+
+        .selected-card-display h3 {
+            color: #90e0ef;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .selected-card-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #00b4d8;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 5px 15px rgba(0, 180, 216, 0.3);
+        }
+
+        .card-preview {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .preview-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #90e0ef;
+        }
+
+        .preview-cell.free {
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            color: white;
+        }
+
+        .controls-section {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 20px 40px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            color: white;
+            min-width: 250px;
+        }
+
+        .btn-confirm:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 180, 216, 0.4);
+            background: linear-gradient(135deg, #0096c7, #005f8a);
+        }
+
+        .btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-random {
+            background: linear-gradient(135deg, #ff9e00, #ff7700);
+            color: white;
+        }
+
+        .btn-random:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(255, 158, 0, 0.4);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #ff4b4b, #ff0000);
+            color: white;
+        }
+
+        .btn-clear:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(255, 75, 75, 0.4);
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 5px solid #00b4d8;
+        }
+
+        .instructions h3 {
+            color: #00b4d8;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding-left: 10px;
+        }
+
+        .instructions li {
+            margin-bottom: 12px;
+            color: #90e0ef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions li:before {
+            content: "•";
+            color: #00b4d8;
+            font-size: 1.5rem;
+        }
+
+        @keyframes selectedPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 25px rgba(0, 180, 216, 0.5); }
+            50% { transform: scale(1.03); box-shadow: 0 15px 30px rgba(0, 180, 216, 0.7); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(0, 180, 216, 0.3);
+            border-top-color: #00b4d8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        .loading-text {
+            color: #00b4d8;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            
+            .selected-cards {
+                flex-direction: column;
+            }
+            
+            .control-btn {
+                padding: 15px 30px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .player-info {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .selection-timer {
+                min-width: auto;
+            }
+            
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 10px;
+            }
+            
+            .control-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header-section">
+            <div class="player-info">
+                <div class="player-id">
+                    <div class="player-avatar" id="playerAvatar">T</div>
+                    <div class="player-details">
+                        <h2 id="playerName">Telegram User</h2>
+                        <p>Player ID: <span id="playerId">0000</span></p>
+                    </div>
+                </div>
+                
+                <div class="selection-timer">
+                    <div class="timer-label">
+                        <i class="fas fa-hourglass-half"></i>
+                        SELECTION TIME LEFT
+                    </div>
+                    <div class="timer-display" id="selectionTimer">01:00</div>
+                </div>
+            </div>
+            
+            <div class="selection-progress">
+                <div class="progress-item">
+                    <div class="progress-value" id="cardsSelected">0</div>
+                    <div class="progress-label">Cards Selected</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="selectionProgress"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-value" id="totalCardsTaken">0</div>
+                    <div class="progress-label">Total Cards Taken</div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-value" id="activePlayers">0</div>
+                    <div class="progress-label">Active Players</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-grid-section">
+            <h2 class="section-title">
+                <i class="fas fa-th-large"></i>
+                AVAILABLE BINGO CARDS (1-500)
+            </h2>
+            <div class="cards-grid" id="cardsGrid">
+                <!-- Card numbers will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="selected-cards-section">
+            <h2 class="section-title">
+                <i class="fas fa-check-circle"></i>
+                YOUR SELECTED CARDS
+            </h2>
+            <div class="selected-cards">
+                <div class="selected-card-display" id="card1Display">
+                    <h3><i class="fas fa-dice-one"></i> CARD #1</h3>
+                    <div class="selected-card-number" id="card1Number">--</div>
+                    <div class="card-preview" id="card1Preview">
+                        <!-- Card preview will be generated -->
+                    </div>
+                </div>
+                
+                <div class="selected-card-display" id="card2Display">
+                    <h3><i class="fas fa-dice-two"></i> CARD #2</h3>
+                    <div class="selected-card-number" id="card2Number">--</div>
+                    <div class="card-preview" id="card2Preview">
+                        <!-- Card preview will be generated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <button class="control-btn btn-random" id="randomSelectBtn">
+                <i class="fas fa-random"></i>
+                RANDOM SELECTION
+            </button>
+            
+            <button class="control-btn btn-clear" id="clearSelectionBtn">
+                <i class="fas fa-trash-alt"></i>
+                CLEAR SELECTION
+            </button>
+            
+            <button class="control-btn btn-confirm" id="confirmSelectionBtn" disabled>
+                <i class="fas fa-check-double"></i>
+                CONFIRM SELECTION
+            </button>
+        </div>
+
+        <div class="instructions">
+            <h3><i class="fas fa-lightbulb"></i> IMPORTANT INSTRUCTIONS</h3>
+            <ul>
+                <li>You can select up to 2 bingo cards</li>
+                <li>Each card has a unique number from 1 to 500</li>
+                <li>Once selected, cards cannot be changed</li>
+                <li>Selection time is limited to 1 minute</li>
+                <li>Game will start automatically when time expires</li>
+                <li>Gray cards are already taken by other players</li>
+                <li>Green cards are available for selection</li>
+                <li>Blue cards are your current selection</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading Game...</div>
+    </div>
+
+    <script>
+        // Telegram Web App initialization
+        const tg = window.Telegram.WebApp;
+        
+        // Initialize Telegram Web App
+        tg.expand();
+        tg.enableClosingConfirmation();
+        
+        // Game state
+        const gameState = {
+            selectedCards: [],
+            maxCards: 2,
+            totalCards: 500,
+            takenCards: new Set(),
+            selectionTime: 60,
+            timerInterval: null,
+            playerName: 'Telegram User',
+            playerId: '0000',
+            activePlayers: Math.floor(Math.random() * 150) + 100
+        };
+        
+        // DOM elements
+        const cardsGrid = document.getElementById('cardsGrid');
+        const card1Number = document.getElementById('card1Number');
+        const card2Number = document.getElementById('card2Number');
+        const card1Preview = document.getElementById('card1Preview');
+        const card2Preview = document.getElementById('card2Preview');
+        const cardsSelected = document.getElementById('cardsSelected');
+        const totalCardsTaken = document.getElementById('totalCardsTaken');
+        const activePlayers = document.getElementById('activePlayers');
+        const selectionProgress = document.getElementById('selectionProgress');
+        const selectionTimer = document.getElementById('selectionTimer');
+        const randomSelectBtn = document.getElementById('randomSelectBtn');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const confirmSelectionBtn = document.getElementById('confirmSelectionBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const playerName = document.getElementById('playerName');
+        const playerId = document.getElementById('playerId');
+        const playerAvatar = document.getElementById('playerAvatar');
+        
+        // Initialize game
+        function initGame() {
+            // Get Telegram user data
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                gameState.playerName = user.first_name || 'Telegram User';
+                if (user.last_name) gameState.playerName += ' ' + user.last_name;
+                gameState.playerId = user.id.toString();
+                
+                // Set display
+                playerName.textContent = gameState.playerName;
+                playerId.textContent = gameState.playerId;
+                playerAvatar.textContent = gameState.playerName.charAt(0).toUpperCase();
+                
+                // Generate random avatar color
+                const colors = ['#00b4d8', '#0077b6', '#0096c7', '#005f8a', '#03045e'];
+                playerAvatar.style.background = colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            // Generate taken cards (simulate other players' selections)
+            generateTakenCards();
+            
+            // Create card grid
+            createCardGrid();
+            
+            // Update displays
+            updateDisplays();
+            
+            // Start selection timer
+            startSelectionTimer();
+        }
+        
+        // Generate random taken cards
+        function generateTakenCards() {
+            // Simulate 30-70% of cards already taken
+            const takenCount = Math.floor(Math.random() * 200) + 150;
+            while (gameState.takenCards.size < takenCount) {
+                const card = Math.floor(Math.random() * gameState.totalCards) + 1;
+                gameState.takenCards.add(card);
+            }
+        }
+        
+        // Create card grid
+        function createCardGrid() {
+            cardsGrid.innerHTML = '';
+            
+            for (let i = 1; i <= gameState.totalCards; i++) {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card-number';
+                cardElement.textContent = i;
+                cardElement.dataset.cardNumber = i;
+                
+                if (gameState.takenCards.has(i)) {
+                    cardElement.classList.add('taken');
+                    cardElement.title = 'Already taken by another player';
+                } else {
+                    cardElement.addEventListener('click', () => selectCard(i));
+                }
+                
+                cardsGrid.appendChild(cardElement);
+            }
+        }
+        
+        // Select a card
+        function selectCard(cardNumber) {
+            // Check if card is already selected
+            if (gameState.selectedCards.includes(cardNumber)) {
+                // Deselect card
+                const index = gameState.selectedCards.indexOf(cardNumber);
+                gameState.selectedCards.splice(index, 1);
+                updateCardElements();
+                return;
+            }
+            
+            // Check if max cards reached
+            if (gameState.selectedCards.length >= gameState.maxCards) {
+                alert(`You can only select ${gameState.maxCards} cards maximum`);
+                return;
+            }
+            
+            // Add card to selection
+            gameState.selectedCards.push(cardNumber);
+            
+            // Update displays
+            updateCardElements();
+            updateSelectedCardsDisplay();
+            updateDisplays();
+        }
+        
+        // Update card elements in grid
+        function updateCardElements() {
+            document.querySelectorAll('.card-number').forEach(card => {
+                const cardNum = parseInt(card.dataset.cardNumber);
+                
+                // Remove selected class from all
+                card.classList.remove('selected');
+                
+                // Add selected class to chosen cards
+                if (gameState.selectedCards.includes(cardNum)) {
+                    card.classList.add('selected');
+                }
+            });
+        }
+        
+        // Update selected cards display
+        function updateSelectedCardsDisplay() {
+            // Update card numbers
+            card1Number.textContent = gameState.selectedCards[0] || '--';
+            card2Number.textContent = gameState.selectedCards[1] || '--';
+            
+            // Update previews
+            updateCardPreview(1, gameState.selectedCards[0]);
+            updateCardPreview(2, gameState.selectedCards[1]);
+            
+            // Update confirm button
+            confirmSelectionBtn.disabled = gameState.selectedCards.length === 0;
+            
+            // Update progress
+            const progress = (gameState.selectedCards.length / gameState.maxCards) * 100;
+            selectionProgress.style.width = `${progress}%`;
+        }
+        
+        // Update card preview
+        function updateCardPreview(cardIndex, cardNumber) {
+            const previewElement = cardIndex === 1 ? card1Preview : card2Preview;
+            
+            if (!cardNumber) {
+                previewElement.innerHTML = '';
+                for (let i = 0; i < 25; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'preview-cell';
+                    cell.textContent = '';
+                    previewElement.appendChild(cell);
+                }
+                return;
+            }
+            
+            // Generate random bingo card preview (5x5 grid)
+            previewElement.innerHTML = '';
+            const cardNumbers = generateBingoCardNumbers();
+            
+            for (let i = 0; i < 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'preview-cell';
+                
+                if (i === 12) { // Center is FREE
+                    cell.textContent = 'FREE';
+                    cell.classList.add('free');
+                } else {
+                    cell.textContent = cardNumbers[i] || '';
+                }
+                
+                previewElement.appendChild(cell);
+            }
+        }
+        
+        // Generate random bingo card numbers (1-75)
+        function generateBingoCardNumbers() {
+            const numbers = new Set();
+            const ranges = [
+                {min: 1, max: 15},   // B
+                {min: 16, max: 30},  // I
+                {min: 31, max: 45},  // N
+                {min: 46, max: 60},  // G
+                {min: 61, max: 75}   // O
+            ];
+            
+            // Generate 5 numbers for each column
+            const cardNumbers = [];
+            for (let col = 0; col < 5; col++) {
+                const colNumbers = new Set();
+                while (colNumbers.size < 5) {
+                    const num = Math.floor(Math.random() * (ranges[col].max - ranges[col].min + 1)) + ranges[col].min;
+                    colNumbers.add(num);
+                }
+                cardNumbers.push(...Array.from(colNumbers));
+            }
+            
+            return cardNumbers;
+        }
+        
+        // Update all displays
+        function updateDisplays() {
+            cardsSelected.textContent = gameState.selectedCards.length;
+            totalCardsTaken.textContent = gameState.takenCards.size;
+            activePlayers.textContent = gameState.activePlayers;
+        }
+        
+        // Start selection timer
+        function startSelectionTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            gameState.selectionTime = 60;
+            updateTimerDisplay();
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.selectionTime--;
+                updateTimerDisplay();
+                
+                if (gameState.selectionTime <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    if (gameState.selectedCards.length > 0) {
+                        confirmSelection();
+                    } else {
+                        autoSelectCards();
+                    }
+                }
+                
+                // Add urgency effect when time is low
+                if (gameState.selectionTime <= 10) {
+                    selectionTimer.style.animation = 'selectedPulse 0.5s infinite';
+                }
+            }, 1000);
+        }
+        
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.selectionTime / 60);
+            const seconds = gameState.selectionTime % 60;
+            selectionTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Randomly select cards
+        function randomSelectCards() {
+            if (gameState.selectedCards.length >= gameState.maxCards) {
+                clearSelection();
+            }
+            
+            const availableCards = [];
+            for (let i = 1; i <= gameState.totalCards; i++) {
+                if (!gameState.takenCards.has(i) && !gameState.selectedCards.includes(i)) {
+                    availableCards.push(i);
+                }
+            }
+            
+            if (availableCards.length === 0) {
+                alert('No available cards left!');
+                return;
+            }
+            
+            // Shuffle available cards
+            for (let i = availableCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [availableCards[i], availableCards[j]] = [availableCards[j], availableCards[i]];
+            }
+            
+            // Select required number of cards
+            const cardsToSelect = Math.min(gameState.maxCards - gameState.selectedCards.length, availableCards.length);
+            for (let i = 0; i < cardsToSelect; i++) {
+                gameState.selectedCards.push(availableCards[i]);
+            }
+            
+            updateCardElements();
+            updateSelectedCardsDisplay();
+            updateDisplays();
+        }
+        
+        // Clear selection
+        function clearSelection() {
+            gameState.selectedCards = [];
+            updateCardElements();
+            updateSelectedCardsDisplay();
+            updateDisplays();
+        }
+        
+        // Auto select cards when time runs out
+        function autoSelectCards() {
+            if (gameState.selectedCards.length === 0) {
+                randomSelectCards();
+                setTimeout(confirmSelection, 1000);
+            }
+        }
+        
+        // Confirm selection and proceed to game
+        function confirmSelection() {
+            if (gameState.selectedCards.length === 0) {
+                alert('Please select at least one card!');
+                return;
+            }
+            
+            // Show loading overlay
+            loadingOverlay.classList.add('active');
+            loadingText.textContent = 'Preparing Game...';
+            
+            // Simulate API call to save selection
+            setTimeout(() => {
+                // Here you would send the selection to your backend
+                // For now, we'll simulate with console log
+                console.log('Selected Cards:', gameState.selectedCards);
+                console.log('Player:', gameState.playerName, gameState.playerId);
+                
+                // Add selected cards to taken cards
+                gameState.selectedCards.forEach(card => {
+                    gameState.takenCards.add(card);
+                });
+                
+                // Simulate other players also selecting cards
+                gameState.activePlayers++;
+                
+                // Proceed to game page
+                proceedToGame();
+            }, 2000);
+        }
+        
+        // Proceed to game page with transition
+        function proceedToGame() {
+            loadingText.textContent = 'Starting Game...';
+            
+            // Create transition effect
+            setTimeout(() => {
+                // Store game state in sessionStorage
+                sessionStorage.setItem('bingoGame', JSON.stringify({
+                    selectedCards: gameState.selectedCards,
+                    playerName: gameState.playerName,
+                    playerId: gameState.playerId,
+                    activePlayers: gameState.activePlayers
+                }));
+                
+                // Redirect to game page
+                window.location.href = 'game.html';
+            }, 1500);
+        }
+        
+        // Event listeners
+        randomSelectBtn.addEventListener('click', randomSelectCards);
+        clearSelectionBtn.addEventListener('click', clearSelection);
+        confirmSelectionBtn.addEventListener('click', confirmSelection);
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+        
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('Card selection paused');
+            }
+        });
+    </script>
+</body>
+</html>
