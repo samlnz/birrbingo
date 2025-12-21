@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winner Announcement</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/winner.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body class="winner-page">
+    <div class="confetti" id="confettiContainer"></div>
+
+    <div class="winner-container">
+        <div class="winner-header">
+            <div class="trophy-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h1>BINGO WINNER!</h1>
+            <p class="winner-subtitle">
+                Congratulations! You've successfully completed a winning line and claimed victory!
+            </p>
+        </div>
+
+        <div class="winner-info">
+            <div class="info-card">
+                <h2><i class="fas fa-crown"></i> WINNER DETAILS</h2>
+                <div class="winner-details">
+                    <div class="winner-avatar" id="winnerAvatar">T</div>
+                    <div class="winner-text">
+                        <div class="winner-name" id="winnerName">Telegram User</div>
+                        <div class="winner-telegram" id="winnerTelegram">@telegram_username</div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalLines">0</div>
+                        <div class="stat-label">Winning Lines</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="gameDuration">00:00</div>
+                        <div class="stat-label">Game Time</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="numbersCalled">0</div>
+                        <div class="stat-label">Numbers Called</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="playerRank">#1</div>
+                        <div class="stat-label">Your Rank</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h2><i class="fas fa-award"></i> PRIZE INFORMATION</h2>
+                <div class="prize-details">
+                    <div class="stat-item" style="margin-bottom: 20px;">
+                        <div class="stat-value" id="prizeAmount">$500</div>
+                        <div class="stat-label">Total Prize Pool</div>
+                    </div>
+                    
+                    <div class="prize-breakdown">
+                        <h3 style="color: #8BC34A; margin-bottom: 15px; font-size: 1.2rem;">
+                            <i class="fas fa-gift"></i> Prize Distribution
+                        </h3>
+                        <ul style="list-style: none; padding-left: 10px;">
+                            <li style="margin-bottom: 10px; color: #90e0ef; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                                <span>First Line: <strong style="color: #FFD700;">$250</strong></span>
+                            </li>
+                            <li style="margin-bottom: 10px; color: #90e0ef; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                                <span>Additional Lines: <strong style="color: #FFD700;">$50 each</strong></span>
+                            </li>
+                            <li style="color: #90e0ef; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                                <span>Your Winnings: <strong style="color: #4CAF50;" id="yourWinnings">$0</strong></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="winning-cards" id="winningCards">
+            <!-- Winning cards will be displayed here -->
+        </div>
+
+        <div class="game-summary">
+            <h2 class="summary-title"><i class="fas fa-chart-bar"></i> GAME SUMMARY</h2>
+            <div class="summary-stats">
+                <div class="summary-stat">
+                    <div class="summary-value" id="totalPlayers">0</div>
+                    <div class="summary-label">Total Players</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value" id="cardsInPlay">0</div>
+                    <div class="summary-label">Cards in Play</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value" id="winningMoment">00:00</div>
+                    <div class="summary-label">Winning Moment</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value" id="callSpeed">5s</div>
+                    <div class="summary-label">Call Speed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="winner-message">
+            <p class="message-text">
+                "Victory belongs to the most persevering. Congratulations on your well-deserved win! 
+                Your strategic card selection and quick marking led you to this triumphant moment."
+            </p>
+        </div>
+
+        <div class="winner-actions">
+            <button class="action-btn btn-play-again" id="playAgainBtn">
+                <i class="fas fa-redo"></i>
+                PLAY AGAIN
+            </button>
+            
+            <button class="action-btn btn-leaderboard" id="leaderboardBtn">
+                <i class="fas fa-list-ol"></i>
+                VIEW LEADERBOARD
+            </button>
+            
+            <button class="action-btn btn-share" id="shareBtn">
+                <i class="fas fa-share-alt"></i>
+                SHARE VICTORY
+            </button>
+        </div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="winnerAudio" preload="auto" autoplay>
+        <!-- Add your winner audio file here -->
+        <source src="audio/winner.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Scripts -->
+    <script src="js/common.js"></script>
+    <script src="js/telegram-init.js"></script>
+    <script src="js/winner.js"></script>
+</body>
+</html>
