@@ -415,7 +415,7 @@ class GamePage {
 createCalledNumbersGrid() {
     this.calledNumbersGrid.innerHTML = '';
     
-    // Column configuration
+    // Column configuration - KEEP COLORS FOR LETTERS ONLY
     const columns = [
         { letter: 'B', min: 1, max: 15, color: '#FF0000' },
         { letter: 'I', min: 16, max: 30, color: '#00FF00' },
@@ -430,7 +430,7 @@ createCalledNumbersGrid() {
         columnDiv.className = 'bingo-column';
         columnDiv.id = `column-${col.letter}`;
         
-        // Column header (B, I, N, G, O)
+        // Column header (B, I, N, G, O) - KEEP COLORED
         const headerDiv = document.createElement('div');
         headerDiv.className = 'column-header';
         headerDiv.textContent = col.letter;
@@ -443,15 +443,15 @@ createCalledNumbersGrid() {
         numbersContainer.className = 'column-numbers';
         numbersContainer.id = `numbers-${col.letter}`;
         
-        // Add numbers for this column (1-15, 16-30, etc.)
+        // Add numbers for this column (1-15, 16-30, etc.) - NO COLOR
         for (let i = col.min; i <= col.max; i++) {
             const numberElement = document.createElement('div');
             numberElement.className = 'called-number';
             numberElement.textContent = i;
             numberElement.dataset.number = i;
             numberElement.dataset.column = col.letter;
-            numberElement.style.color = col.color;
-            numberElement.style.borderLeft = `4px solid ${col.color}`;
+            // REMOVED: numberElement.style.color = col.color;
+            // REMOVED: numberElement.style.borderLeft = `4px solid ${col.color}`;
             numbersContainer.appendChild(numberElement);
         }
         
@@ -459,31 +459,17 @@ createCalledNumbersGrid() {
         this.calledNumbersGrid.appendChild(columnDiv);
     });
 }
-
 updateCalledNumbersDisplay() {
-    const columnColors = {
-        'B': '#FF0000',
-        'I': '#00FF00', 
-        'N': '#0000FF',
-        'G': '#FFFF00',
-        'O': '#FF00FF'
-    };
+    // REMOVED: const columnColors = {...}
     
     // Update all called numbers
     this.gameState.calledNumbers.forEach(number => {
-        // Find which column this number belongs to
-        let column = '';
-        if (number >= 1 && number <= 15) column = 'B';
-        else if (number >= 16 && number <= 30) column = 'I';
-        else if (number >= 31 && number <= 45) column = 'N';
-        else if (number >= 46 && number <= 60) column = 'G';
-        else if (number >= 61 && number <= 75) column = 'O';
-        
         // Find the element
         const element = document.querySelector(`.called-number[data-number="${number}"]`);
         if (element) {
             element.classList.add('called');
-            element.style.backgroundColor = columnColors[column];
+            // Use a neutral color for called numbers instead of column colors
+            element.style.backgroundColor = '#4CAF50'; // Green for called numbers
             element.style.color = '#FFFFFF';
             element.style.fontWeight = 'bold';
             element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
@@ -492,7 +478,6 @@ updateCalledNumbersDisplay() {
     
     this.numbersCalled.textContent = this.gameState.calledNumbers.size;
 }
-
     updateDisplays() {
         this.activePlayers.textContent = this.gameState.activePlayers;
     }
