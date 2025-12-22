@@ -415,7 +415,7 @@ class GamePage {
 createCalledNumbersGrid() {
     this.calledNumbersGrid.innerHTML = '';
     
-    // Column configuration with number ranges
+    // Column configuration
     const columns = [
         { letter: 'B', min: 1, max: 15, color: '#FF0000' },
         { letter: 'I', min: 16, max: 30, color: '#00FF00' },
@@ -430,10 +430,10 @@ createCalledNumbersGrid() {
         columnDiv.className = 'bingo-column';
         columnDiv.id = `column-${col.letter}`;
         
-        // Column header with range (B: 1-15)
+        // Column header (B, I, N, G, O)
         const headerDiv = document.createElement('div');
         headerDiv.className = 'column-header';
-        headerDiv.textContent = `${col.letter} (${col.min}-${col.max})`;
+        headerDiv.textContent = col.letter;
         headerDiv.style.color = col.color;
         headerDiv.style.borderColor = col.color;
         columnDiv.appendChild(headerDiv);
@@ -443,24 +443,7 @@ createCalledNumbersGrid() {
         numbersContainer.className = 'column-numbers';
         numbersContainer.id = `numbers-${col.letter}`;
         
-        // Add numbers for this column (1-15, 16-30, etc.)
-        for (let i = col.min; i <= col.max; i++) {
-            const numberElement = document.createElement('div');
-            numberElement.className = 'called-number';
-            numberElement.textContent = i;
-            numberElement.dataset.number = i;
-            numberElement.dataset.column = col.letter;
-            numberElement.style.color = col.color;
-            numberElement.style.borderLeft = `4px solid ${col.color}`;
-            numberElement.style.background = 'rgba(255, 255, 255, 0.05)';
-            numbersContainer.appendChild(numberElement);
-        }
         
-        columnDiv.appendChild(numbersContainer);
-        this.calledNumbersGrid.appendChild(columnDiv);
-    });
-}
-
 updateCalledNumbersDisplay() {
     const columnColors = {
         'B': '#FF0000',
@@ -484,14 +467,10 @@ updateCalledNumbersDisplay() {
         const element = document.querySelector(`.called-number[data-number="${number}"]`);
         if (element) {
             element.classList.add('called');
-            // Use brighter background for better visibility
-            const color = columnColors[column];
-            element.style.background = color;
+            element.style.backgroundColor = columnColors[column];
             element.style.color = '#FFFFFF';
             element.style.fontWeight = 'bold';
-            element.style.boxShadow = '0 4px 12px rgba(255, 255, 255, 0.3)';
-            element.style.borderLeft = `4px solid ${color}`;
-            element.style.borderRadius = '6px';
+            element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
         }
     });
     
