@@ -79,7 +79,7 @@
 
 .game-area {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1.5fr 1.5fr;
     gap: 30px;
     margin-top: 20px;
 }
@@ -142,7 +142,7 @@
 .current-number-display {
     background: rgba(0, 0, 0, 0.5);
     border-radius: 25px;
-    padding: 40px;
+    padding: 30px;
     text-align: center;
     border: 5px solid #00b4d8;
     box-shadow: 
@@ -150,24 +150,22 @@
         inset 0 0 50px rgba(0, 180, 216, 0.1);
     position: relative;
     overflow: hidden;
-    min-height: 300px;
+    min-height: 150px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
-
 .current-number {
-    font-size: 8rem;
+    font-size: 5rem;
     font-weight: bold;
     color: #00b4d8;
     text-shadow: 
         0 0 30px rgba(0, 180, 216, 0.7),
         0 0 60px rgba(0, 180, 216, 0.4);
-    margin: 20px 0;
+    margin: 10px 0;
     animation: numberGlow 2s infinite alternate;
 }
-
 .number-letter {
     font-size: 3rem;
     color: #90e0ef;
@@ -178,8 +176,11 @@
 .called-numbers-container {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 15px;
-    padding: 25px;
+    padding: 20px;
     border: 2px solid rgba(0, 180, 216, 0.3);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .called-numbers-title {
@@ -193,13 +194,15 @@
 
 .called-numbers-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 12px;
-    max-height: 300px;
-    overflow-y: auto;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
     padding: 15px;
     background: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
+    flex-grow: 1;
 }
 
 .called-number {
@@ -241,7 +244,7 @@
 .player-cards-section {
     background: linear-gradient(135deg, #001219, #0a2a2a);
     border-radius: 20px;
-    padding: 30px;
+    padding: 20px;
     border: 3px solid #00b4d8;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
@@ -576,6 +579,7 @@
         padding: 20px;
     }
     
+    
     .player-cards-container {
         grid-template-columns: 1fr;
     }
@@ -587,6 +591,19 @@
     .grid-cell {
         font-size: 1rem;
     }
+
+    .called-numbers-grid {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.column-numbers {
+    grid-template-rows: repeat(15, 1fr);
+}
+
+.called-number {
+    height: 24px;
+    font-size: 0.8rem;
+}
     
     .called-numbers-grid {
         grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
@@ -608,36 +625,29 @@
 /* BINGO COLUMN LAYOUT  */
 /* ==================== */
 
-.called-numbers-container {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    padding: 20px;
-    border: 2px solid rgba(0, 180, 216, 0.3);
-    margin-top: 20px;
-}
-
 .called-numbers-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
-    padding: 15px;
+    gap: 8px;
+    padding: 10px;
     background: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
-    min-height: 500px; /* Increased height to show all numbers */
+    flex-grow: 1;
 }
 
 .bingo-column {
     display: flex;
     flex-direction: column;
     align-items: center;
+    height: 100%;
 }
 
 .column-header {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 10px;
     padding: 8px;
-    width: 90%;
+    width: 100%;
     text-align: center;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
@@ -645,26 +655,27 @@
 }
 
 .column-numbers {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+    display: grid;
+    grid-template-rows: repeat(15, 1fr);
+    gap: 4px;
     width: 100%;
-    padding: 10px;
-    height: auto; /* Remove fixed height */
-    overflow-y: visible; /* Remove scrolling */
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
+    padding: 5px;
+    flex-grow: 1;
 }
 
 .called-number {
-    padding: 12px 8px;
+    height: 28px;
+    padding: 4px 2px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
-    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-size: 0.9rem;
     font-weight: bold;
     transition: all 0.3s ease;
-    border-left: 4px solid;
-    margin-bottom: 5px;
-    min-height: 40px;
+    border-left: 3px solid;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -712,79 +723,4 @@
     color: #000 !important;
     border: 3px solid #FFD700 !important;
     animation: pulseWin 1s infinite !important;
-}
-/* Ensure all 75 numbers are visible */
-.bingo-column {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.column-header {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 15px;
-    padding: 12px;
-    width: 100%;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    border: 2px solid;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Color coding for columns */
-#column-B .column-header { 
-    border-color: #FF0000; 
-    color: #FF0000; 
-    background: rgba(255, 0, 0, 0.1);
-}
-#column-I .column-header { 
-    border-color: #00FF00; 
-    color: #00FF00; 
-    background: rgba(0, 255, 0, 0.1);
-}
-#column-N .column-header { 
-    border-color: #0000FF; 
-    color: #0000FF; 
-    background: rgba(0, 0, 255, 0.1);
-}
-#column-G .column-header { 
-    border-color: #FFFF00; 
-    color: #FFFF00; 
-    background: rgba(255, 255, 0, 0.1);
-}
-#column-O .column-header { 
-    border-color: #FF00FF; 
-    color: #FF00FF; 
-    background: rgba(255, 0, 255, 0.1);
-}
-
-/* Called numbers highlighting */
-.called-number.called {
-    transform: scale(1.05);
-    font-weight: bold;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 1.2rem;
-}
-
-/* Ensure the game area layout accommodates the larger container */
-.game-area {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 30px;
-    margin-top: 20px;
-}
-
-.caller-section {
-    background: linear-gradient(135deg, #001219, #005f73);
-    border-radius: 20px;
-    padding: 30px;
-    border: 3px solid #00b4d8;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    min-height: 800px; /* Increased height */
 }
