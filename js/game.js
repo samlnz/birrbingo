@@ -415,14 +415,18 @@ class GamePage {
 createCalledNumbersGrid() {
     this.calledNumbersGrid.innerHTML = '';
     
-    // Column configuration - KEEP COLORS FOR LETTERS ONLY
+    // Column configuration with updated colors
     const columns = [
-        { letter: 'B', min: 1, max: 15, color: '#FF0000' },
-        { letter: 'I', min: 16, max: 30, color: '#00FF00' },
-        { letter: 'N', min: 31, max: 45, color: '#0000FF' },
-        { letter: 'G', min: 46, max: 60, color: '#FFFF00' },
-        { letter: 'O', min: 61, max: 75, color: '#FF00FF' }
+        { letter: 'B', min: 1, max: 15, color: '#FF4444' },    // Red
+        { letter: 'I', min: 16, max: 30, color: '#44FF44' },   // Green
+        { letter: 'N', min: 31, max: 45, color: '#4488FF' },   // Blue
+        { letter: 'G', min: 46, max: 60, color: '#FFFF44' },   // Yellow
+        { letter: 'O', min: 61, max: 75, color: '#FF44FF' }    // Magenta
     ];
+    
+    // Create each column (rest of the function remains the same)
+    // ...
+}
     
     // Create each column
     columns.forEach(col => {
@@ -460,19 +464,22 @@ createCalledNumbersGrid() {
     });
 }
 updateCalledNumbersDisplay() {
-    // REMOVED: const columnColors = {...}
+    // Remove recent class from previous number
+    if (this.lastCalledNumberElement) {
+        this.lastCalledNumberElement.classList.remove('called-recent');
+    }
     
     // Update all called numbers
     this.gameState.calledNumbers.forEach(number => {
-        // Find the element
         const element = document.querySelector(`.called-number[data-number="${number}"]`);
         if (element) {
             element.classList.add('called');
-            // Use a neutral color for called numbers instead of column colors
-            element.style.backgroundColor = '#4CAF50'; // Green for called numbers
-            element.style.color = '#FFFFFF';
-            element.style.fontWeight = 'bold';
-            element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
+            
+            // Store the most recent called number for animation
+            if (number === Array.from(this.gameState.calledNumbers).pop()) {
+                this.lastCalledNumberElement = element;
+                element.classList.add('called-recent');
+            }
         }
     });
     

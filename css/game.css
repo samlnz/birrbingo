@@ -682,10 +682,36 @@
     color: #FFFFFF; /* White text for all numbers */
 }
 .called-number.called {
-    background: #4CAF50 !important; /* Green background for called numbers */
-    color: #FFFFFF !important;
     font-weight: bold !important;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 0 10px rgba(255,255,255,0.5) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add column-specific background colors for called numbers */
+#column-B .called-number.called { 
+    background: #FF4444 !important; /* Red for B column */
+    color: #FFFFFF !important;
+}
+
+#column-I .called-number.called { 
+    background: #44FF44 !important; /* Green for I column */
+    color: #000000 !important; /* Black text for better contrast */
+}
+
+#column-N .called-number.called { 
+    background: #4488FF !important; /* Blue for N column */
+    color: #FFFFFF !important;
+}
+
+#column-G .called-number.called { 
+    background: #FFFF44 !important; /* Yellow for G column */
+    color: #000000 !important; /* Black text for better contrast */
+}
+
+#column-O .called-number.called { 
+    background: #FF44FF !important; /* Magenta for O column */
+    color: #FFFFFF !important;
 }
 }.called-number {
     padding: 8px 5px;
@@ -704,11 +730,11 @@
 }
 
 /* Color coding for columns */
-#column-B .column-header { border-color: #FF0000; color: #FF0000; }
-#column-I .column-header { border-color: #00FF00; color: #00FF00; }
-#column-N .column-header { border-color: #0000FF; color: #0000FF; }
-#column-G .column-header { border-color: #FFFF00; color: #FFFF00; }
-#column-O .column-header { border-color: #FF00FF; color: #FF00FF; }
+#column-B .column-header { border-color: #FF4444; color: #FF4444; }
+#column-I .column-header { border-color: #44FF44; color: #44FF44; }
+#column-N .column-header { border-color: #4488FF; color: #4488FF; }
+#column-G .column-header { border-color: #FFFF44; color: #FFFF44; }
+#column-O .column-header { border-color: #FF44FF; color: #FF44FF; }
 
 /* Bingo Card Color Coding */
 .grid-cell[data-col="0"] { color: #FF0000 !important; border-color: rgba(255, 0, 0, 0.3) !important; }
