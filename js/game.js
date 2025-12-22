@@ -415,7 +415,7 @@ class GamePage {
 createCalledNumbersGrid() {
     this.calledNumbersGrid.innerHTML = '';
     
-    // Column configuration
+    // Column configuration with number ranges
     const columns = [
         { letter: 'B', min: 1, max: 15, color: '#FF0000' },
         { letter: 'I', min: 16, max: 30, color: '#00FF00' },
@@ -430,10 +430,10 @@ createCalledNumbersGrid() {
         columnDiv.className = 'bingo-column';
         columnDiv.id = `column-${col.letter}`;
         
-        // Column header (B, I, N, G, O)
+        // Column header with range (B: 1-15)
         const headerDiv = document.createElement('div');
         headerDiv.className = 'column-header';
-        headerDiv.textContent = col.letter;
+        headerDiv.textContent = `${col.letter} (${col.min}-${col.max})`;
         headerDiv.style.color = col.color;
         headerDiv.style.borderColor = col.color;
         columnDiv.appendChild(headerDiv);
@@ -452,6 +452,7 @@ createCalledNumbersGrid() {
             numberElement.dataset.column = col.letter;
             numberElement.style.color = col.color;
             numberElement.style.borderLeft = `4px solid ${col.color}`;
+            numberElement.style.background = 'rgba(255, 255, 255, 0.05)';
             numbersContainer.appendChild(numberElement);
         }
         
@@ -483,10 +484,14 @@ updateCalledNumbersDisplay() {
         const element = document.querySelector(`.called-number[data-number="${number}"]`);
         if (element) {
             element.classList.add('called');
-            element.style.backgroundColor = columnColors[column];
+            // Use brighter background for better visibility
+            const color = columnColors[column];
+            element.style.background = color;
             element.style.color = '#FFFFFF';
             element.style.fontWeight = 'bold';
-            element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
+            element.style.boxShadow = '0 4px 12px rgba(255, 255, 255, 0.3)';
+            element.style.borderLeft = `4px solid ${color}`;
+            element.style.borderRadius = '6px';
         }
     });
     
