@@ -667,19 +667,26 @@
 }
 
 .called-number {
-    height: 60px;
+    height: 80px;
     padding: 4px 2px;
     text-align: center;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     font-size: 0.9rem;
-    font-weight: bold;
+    font-weight: normal; /* Changed from bold */
     transition: all 0.3s ease;
-    /* Remove border-left: 3px solid; */
+    /* REMOVED: border-left: 3px solid; */
     display: flex;
     align-items: center;
     justify-content: center;
-
+    color: #FFFFFF; /* White text for all numbers */
+}
+.called-number.called {
+    background: #4CAF50 !important; /* Green background for called numbers */
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+}
 }.called-number {
     padding: 8px 5px;
     text-align: center;
