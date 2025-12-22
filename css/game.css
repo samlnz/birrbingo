@@ -1,6 +1,8 @@
+[file name]: game.css
+[file content begin]
 /* Game page specific styles */
 .game-page {
-    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
     min-height: 100vh;
     padding: 20px;
     overflow-x: hidden;
@@ -156,6 +158,7 @@
     align-items: center;
     justify-content: center;
 }
+
 .current-number {
     font-size: 5rem;
     font-weight: bold;
@@ -166,6 +169,7 @@
     margin: 10px 0;
     animation: numberGlow 2s infinite alternate;
 }
+
 .number-letter {
     font-size: 3rem;
     color: #90e0ef;
@@ -203,42 +207,6 @@
     background: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     flex-grow: 1;
-}
-
-.called-number {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #005f73, #003845);
-    border-radius: 10px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: white;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.called-number:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transform: translateX(-100%);
-}
-
-.called-number.called-recently:before {
-    animation: shimmerEffect 0.6s ease;
-}
-
-.called-number.called-recently {
-    background: linear-gradient(135deg, #00b4d8, #0077b6);
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(0, 180, 216, 0.5);
 }
 
 .player-cards-section {
@@ -579,7 +547,6 @@
         padding: 20px;
     }
     
-    
     .player-cards-container {
         grid-template-columns: 1fr;
     }
@@ -593,21 +560,16 @@
     }
 
     .called-numbers-grid {
-    grid-template-columns: repeat(5, 1fr);
-}
+        grid-template-columns: repeat(5, 1fr);
+    }
 
-.column-numbers {
-    grid-template-rows: repeat(15, 1fr);
-}
+    .column-numbers {
+        grid-template-rows: repeat(15, 1fr);
+    }
 
-.called-number {
-    height: 24px;
-    font-size: 0.8rem;
-}
-    
-    .called-numbers-grid {
-        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-        gap: 8px;
+    .called-number {
+        height: 24px;
+        font-size: 0.8rem;
     }
     
     .game-controls {
@@ -621,6 +583,7 @@
         padding: 15px;
     }
 }
+
 /* ==================== */
 /* BINGO COLUMN LAYOUT  */
 /* ==================== */
@@ -670,52 +633,101 @@
     height: 80px;
     padding: 4px 2px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
     font-size: 0.9rem;
-    font-weight: normal; /* Changed from bold */
+    font-weight: normal;
     transition: all 0.3s ease;
-    /* REMOVED: border-left: 3px solid; */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #FFFFFF; /* White text for all numbers */
+    color: inherit; /* Inherit color from column */
 }
+
+/* Called number styles - USE COLUMN COLORS FOR TEXT */
 .called-number.called {
-    background: #4CAF50 !important; /* Green background for called numbers */
-    color: #FFFFFF !important;
+    background: rgba(0, 0, 0, 0.5) !important; /* Dark background for called numbers */
     font-weight: bold !important;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
-}
-}.called-number {
-    padding: 8px 5px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-    font-size: 1rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    border-left: 4px solid;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+    position: relative;
+    overflow: hidden;
 }
 
-.called-number.called {
-    transform: scale(1.05);
-    font-weight: bold;
+/* Add a subtle glow effect for called numbers */
+.called-number.called::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 4px;
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+    pointer-events: none;
 }
 
-/* Color coding for columns */
-#column-B .column-header { border-color: #FF0000; color: #FF0000; }
-#column-I .column-header { border-color: #00FF00; color: #00FF00; }
-#column-N .column-header { border-color: #0000FF; color: #0000FF; }
-#column-G .column-header { border-color: #FFFF00; color: #FFFF00; }
-#column-O .column-header { border-color: #FF00FF; color: #FF00FF; }
+/* Color coding for columns - APPLY TO ALL NUMBERS IN EACH COLUMN */
+#column-B .column-header { 
+    border-color: #FF4444; 
+    color: #FF4444; 
+    background: rgba(255, 68, 68, 0.1);
+}
 
-/* Bingo Card Color Coding */
-.grid-cell[data-col="0"] { color: #FF0000 !important; border-color: rgba(255, 0, 0, 0.3) !important; }
-.grid-cell[data-col="1"] { color: #00FF00 !important; border-color: rgba(0, 255, 0, 0.3) !important; }
-.grid-cell[data-col="2"] { color: #0000FF !important; border-color: rgba(0, 0, 255, 0.3) !important; }
-.grid-cell[data-col="3"] { color: #FFFF00 !important; border-color: rgba(255, 255, 0, 0.3) !important; }
-.grid-cell[data-col="4"] { color: #FF00FF !important; border-color: rgba(255, 0, 255, 0.3) !important; }
+#column-B .called-number {
+    color: #FF4444; /* Red for B column */
+    border-left: 3px solid #FF4444;
+}
+
+#column-I .column-header { 
+    border-color: #44FF44; 
+    color: #44FF44;
+    background: rgba(68, 255, 68, 0.1);
+}
+
+#column-I .called-number {
+    color: #44FF44; /* Green for I column */
+    border-left: 3px solid #44FF44;
+}
+
+#column-N .column-header { 
+    border-color: #4488FF; 
+    color: #4488FF;
+    background: rgba(68, 136, 255, 0.1);
+}
+
+#column-N .called-number {
+    color: #4488FF; /* Blue for N column */
+    border-left: 3px solid #4488FF;
+}
+
+#column-G .column-header { 
+    border-color: #FFFF44; 
+    color: #FFFF44;
+    background: rgba(255, 255, 68, 0.1);
+}
+
+#column-G .called-number {
+    color: #FFFF44; /* Yellow for G column */
+    border-left: 3px solid #FFFF44;
+}
+
+#column-O .column-header { 
+    border-color: #FF44FF; 
+    color: #FF44FF;
+    background: rgba(255, 68, 255, 0.1);
+}
+
+#column-O .called-number {
+    color: #FF44FF; /* Magenta for O column */
+    border-left: 3px solid #FF44FF;
+}
+
+/* Bingo Card Color Coding - Keep existing */
+.grid-cell[data-col="0"] { color: #FF4444 !important; border-color: rgba(255, 68, 68, 0.3) !important; }
+.grid-cell[data-col="1"] { color: #44FF44 !important; border-color: rgba(68, 255, 68, 0.3) !important; }
+.grid-cell[data-col="2"] { color: #4488FF !important; border-color: rgba(68, 136, 255, 0.3) !important; }
+.grid-cell[data-col="3"] { color: #FFFF44 !important; border-color: rgba(255, 255, 68, 0.3) !important; }
+.grid-cell[data-col="4"] { color: #FF44FF !important; border-color: rgba(255, 68, 255, 0.3) !important; }
 
 /* Free space unique color */
 .grid-cell.free {
@@ -731,3 +743,29 @@
     border: 3px solid #FFD700 !important;
     animation: pulseWin 1s infinite !important;
 }
+
+/* Special highlight for most recently called number */
+.called-number.called-recent {
+    animation: pulseRecent 1s ease 3;
+    transform: scale(1.05);
+}
+
+@keyframes pulseRecent {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); box-shadow: 0 0 15px currentColor; }
+    100% { transform: scale(1); }
+}
+
+/* Current number display color coding */
+.current-number.b-col { color: #FF4444 !important; }
+.current-number.i-col { color: #44FF44 !important; }
+.current-number.n-col { color: #4488FF !important; }
+.current-number.g-col { color: #FFFF44 !important; }
+.current-number.o-col { color: #FF44FF !important; }
+
+.number-letter.b-col { color: #FF4444 !important; }
+.number-letter.i-col { color: #44FF44 !important; }
+.number-letter.n-col { color: #4488FF !important; }
+.number-letter.g-col { color: #FFFF44 !important; }
+.number-letter.o-col { color: #FF44FF !important; }
+[file content end]
