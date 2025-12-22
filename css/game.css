@@ -667,7 +667,7 @@
 }
 
 .called-number {
-    height: 28px;
+    height: 60px;
     padding: 4px 2px;
     text-align: center;
     background: rgba(255, 255, 255, 0.1);
@@ -675,12 +675,12 @@
     font-size: 0.9rem;
     font-weight: bold;
     transition: all 0.3s ease;
-    border-left: 3px solid;
+    /* Remove border-left: 3px solid; */
     display: flex;
     align-items: center;
     justify-content: center;
-}
-.called-number {
+
+}.called-number {
     padding: 8px 5px;
     text-align: center;
     background: rgba(255, 255, 255, 0.1);
