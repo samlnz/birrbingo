@@ -681,35 +681,11 @@
     justify-content: center;
     color: #FFFFFF; /* White text for all numbers */
 }
-/* Column-specific colors for called numbers highlight */
-#column-B .called-number.called {
-    background: #FF0000 !important; /* Red for B column */
-    border-left: 4px solid #FF0000 !important;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7) !important;
-}
-
-#column-I .called-number.called {
-    background: #00FF00 !important; /* Green for I column */
-    border-left: 4px solid #00FF00 !important;
-    box-shadow: 0 0 15px rgba(0, 255, 0, 0.7) !important;
-}
-
-#column-N .called-number.called {
-    background: #0000FF !important; /* Blue for N column */
-    border-left: 4px solid #0000FF !important;
-    box-shadow: 0 0 15px rgba(0, 0, 255, 0.7) !important;
-}
-
-#column-G .called-number.called {
-    background: #FFFF00 !important; /* Yellow for G column */
-    border-left: 4px solid #FFFF00 !important;
-    box-shadow: 0 0 15px rgba(255, 255, 0, 0.7) !important;
-}
-
-#column-O .called-number.called {
-    background: #FF00FF !important; /* Magenta for O column */
-    border-left: 4px solid #FF00FF !important;
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.7) !important;
+.called-number.called {
+    background: #4CAF50 !important; /* Green background for called numbers */
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
 }
 }.called-number {
     padding: 8px 5px;
