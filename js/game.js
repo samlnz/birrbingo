@@ -1,3 +1,5 @@
+[file name]: game.js
+[file content begin]
 // Game page functionality
 
 class GamePage {
@@ -5,13 +7,13 @@ class GamePage {
         this.gameState = gameState;
         this.telegramManager = telegramManager;
         
-        // BINGO ranges
+        // BINGO ranges with colors
         this.BINGO_RANGES = {
-            'B': { min: 1, max: 15 },
-            'I': { min: 16, max: 30 },
-            'N': { min: 31, max: 45 },
-            'G': { min: 46, max: 60 },
-            'O': { min: 61, max: 75 }
+            'B': { min: 1, max: 15, color: '#FF4444' },    // Red
+            'I': { min: 16, max: 30, color: '#44FF44' },   // Green
+            'N': { min: 31, max: 45, color: '#4488FF' },   // Blue
+            'G': { min: 46, max: 60, color: '#FFFF44' },   // Yellow
+            'O': { min: 61, max: 75, color: '#FF44FF' }    // Magenta
         };
         
         // DOM elements
@@ -46,6 +48,7 @@ class GamePage {
         this.gameTimerId = null;
         this.nextCallTimerId = null;
         this.callInterval = 5000;
+        this.lastCalledNumberElement = null;
         
         this.init();
     }
@@ -70,12 +73,12 @@ class GamePage {
         this.playerAvatar.textContent = this.gameState.playerName.charAt(0).toUpperCase();
     }
 
-        generateBingoCards() {
+    generateBingoCards() {
         this.playerCardsContainer.innerHTML = '';
         
         this.gameState.selectedCards.forEach((cardNumber, index) => {
             const cardId = `card${index + 1}`;
-            const bingoNumbers = this.generateBingoCardNumbers(cardNumber); // Pass card number
+            const bingoNumbers = this.generateBingoCardNumbers(cardNumber);
             this.bingoNumbers[cardId] = bingoNumbers;
             
             const cardElement = this.createBingoCard(cardNumber, cardId, bingoNumbers);
@@ -83,12 +86,10 @@ class GamePage {
         });
     }
 
-       generateBingoCardNumbers(cardNumber) {
-        // Use card number as seed for consistent cards
+    generateBingoCardNumbers(cardNumber) {
         const seed = cardNumber;
         const numbers = [];
         
-        // Fixed column ranges
         const columnRanges = [
             {min: 1, max: 15},   // B
             {min: 16, max: 30},  // I
@@ -97,16 +98,13 @@ class GamePage {
             {min: 61, max: 75}   // O
         ];
         
-        // Generate consistent numbers based on card number
         columnRanges.forEach((range, colIndex) => {
             const colNumbers = [];
             for (let row = 0; row < 5; row++) {
-                // Create deterministic number based on card number, column, and row
                 const hash = cardNumber * 100 + colIndex * 10 + row;
                 const num = (hash % (range.max - range.min + 1)) + range.min;
                 colNumbers.push(num);
             }
-            // Sort column numbers
             colNumbers.sort((a, b) => a - b);
             numbers.push(...colNumbers);
         });
@@ -172,7 +170,6 @@ class GamePage {
         
         cardElement.innerHTML = cardHTML;
         
-        // Add click event listeners to cells
         const cells = cardElement.querySelectorAll('.grid-cell:not(.free)');
         cells.forEach(cell => {
             cell.addEventListener('click', () => {
@@ -194,30 +191,26 @@ class GamePage {
         } else {
             markedNumbers.add(number);
             cell.classList.add('marked');
-            
-            // Check for winning line
             this.checkForWinningLine(cardId);
         }
         
-        // Update card stats
         this.updateCardStats(cardId);
     }
 
     updateCardStats(cardId) {
-        const markedCount = this.gameState.markedNumbers[cardId].size + 1; // +1 for free space
+        const markedCount = this.gameState.markedNumbers[cardId].size + 1;
         const linesCount = this.gameState.winningLines[cardId].length;
         
         document.getElementById(`${cardId}-marked`).textContent = markedCount;
         document.getElementById(`${cardId}-lines`).textContent = linesCount;
         
-        // Update BINGO button
         this.updateBingoButton();
     }
 
-        checkForWinningLine(cardId) {
+    checkForWinningLine(cardId) {
         const winningLines = [];
         const allMarked = new Set(this.gameState.markedNumbers[cardId]);
-        allMarked.add('FREE'); // Free space is always marked
+        allMarked.add('FREE');
         
         // Check rows (0-4)
         for (let row = 0; row < 5; row++) {
@@ -228,18 +221,15 @@ class GamePage {
                 const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
                 const number = cell.dataset.number;
                 
-                // Check if marked by player
                 if (!allMarked.has(number === 'FREE' ? 'FREE' : parseInt(number))) {
                     isComplete = false;
                 }
                 
-                // Check if number was actually called (for non-free spaces)
                 if (number !== 'FREE' && !this.gameState.calledNumbers.has(parseInt(number))) {
                     allNumbersCalled = false;
                 }
             }
             
-            // Only consider winning if ALL numbers in line were CALLED
             if (isComplete && allNumbersCalled && !this.gameState.winningLines[cardId].includes(`row${row}`)) {
                 winningLines.push(`row${row}`);
                 this.highlightWinningLine(cardId, 'row', row);
@@ -309,7 +299,8 @@ class GamePage {
             winningLines.push('diag2');
             this.highlightWinningLine(cardId, 'diag', 2);
         }
-                // Check four corners
+        
+        // Check four corners
         let cornersComplete = true;
         let cornersAllCalled = true;
         const corners = [
@@ -334,7 +325,6 @@ class GamePage {
         
         if (cornersComplete && cornersAllCalled && !this.gameState.winningLines[cardId].includes('corners')) {
             winningLines.push('corners');
-            // Highlight the corners
             corners.forEach(([row, col]) => {
                 const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
                 if (cell) {
@@ -342,14 +332,13 @@ class GamePage {
                 }
             });
         }
-        // Add new winning lines
+        
         winningLines.forEach(line => {
             if (!this.gameState.winningLines[cardId].includes(line)) {
                 this.gameState.winningLines[cardId].push(line);
             }
         });
         
-        // If we have a new winning line, show indicator
         if (winningLines.length > 0) {
             this.showWinningLineIndicator(cardId, winningLines);
         }
@@ -391,7 +380,6 @@ class GamePage {
         this.winningLineText.textContent = `Card #${this.gameState.selectedCards[cardIndex]} has completed ${lines.length} line${lines.length > 1 ? 's' : ''}!`;
         this.winningLineIndicator.classList.add('active');
         
-        // Play winning sound
         BingoUtils.playAudio(this.bingoAudio, 0.8);
     }
 
@@ -412,72 +400,84 @@ class GamePage {
         this.updateDisplays();
     }
 
-createCalledNumbersGrid() {
-    this.calledNumbersGrid.innerHTML = '';
-    
-    // Column configuration - KEEP COLORS FOR LETTERS ONLY
-    const columns = [
-        { letter: 'B', min: 1, max: 15, color: '#FF0000' },
-        { letter: 'I', min: 16, max: 30, color: '#00FF00' },
-        { letter: 'N', min: 31, max: 45, color: '#0000FF' },
-        { letter: 'G', min: 46, max: 60, color: '#FFFF00' },
-        { letter: 'O', min: 61, max: 75, color: '#FF00FF' }
-    ];
-    
-    // Create each column
-    columns.forEach(col => {
-        const columnDiv = document.createElement('div');
-        columnDiv.className = 'bingo-column';
-        columnDiv.id = `column-${col.letter}`;
+    createCalledNumbersGrid() {
+        this.calledNumbersGrid.innerHTML = '';
         
-        // Column header (B, I, N, G, O) - KEEP COLORED
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'column-header';
-        headerDiv.textContent = col.letter;
-        headerDiv.style.color = col.color;
-        headerDiv.style.borderColor = col.color;
-        columnDiv.appendChild(headerDiv);
+        // Column configuration with colors
+        const columns = [
+            { letter: 'B', min: 1, max: 15, color: '#FF4444' },    // Red
+            { letter: 'I', min: 16, max: 30, color: '#44FF44' },   // Green
+            { letter: 'N', min: 31, max: 45, color: '#4488FF' },   // Blue
+            { letter: 'G', min: 46, max: 60, color: '#FFFF44' },   // Yellow
+            { letter: 'O', min: 61, max: 75, color: '#FF44FF' }    // Magenta
+        ];
         
-        // Numbers container
-        const numbersContainer = document.createElement('div');
-        numbersContainer.className = 'column-numbers';
-        numbersContainer.id = `numbers-${col.letter}`;
-        
-        // Add numbers for this column (1-15, 16-30, etc.) - NO COLOR
-        for (let i = col.min; i <= col.max; i++) {
-            const numberElement = document.createElement('div');
-            numberElement.className = 'called-number';
-            numberElement.textContent = i;
-            numberElement.dataset.number = i;
-            numberElement.dataset.column = col.letter;
-            // REMOVED: numberElement.style.color = col.color;
-            // REMOVED: numberElement.style.borderLeft = `4px solid ${col.color}`;
-            numbersContainer.appendChild(numberElement);
+        // Create each column
+        columns.forEach(col => {
+            const columnDiv = document.createElement('div');
+            columnDiv.className = 'bingo-column';
+            columnDiv.id = `column-${col.letter}`;
+            
+            // Column header (B, I, N, G, O)
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'column-header';
+            headerDiv.textContent = col.letter;
+            headerDiv.style.color = col.color;
+            headerDiv.style.borderColor = col.color;
+            columnDiv.appendChild(headerDiv);
+            
+            // Numbers container
+            const numbersContainer = document.createElement('div');
+            numbersContainer.className = 'column-numbers';
+            numbersContainer.id = `numbers-${col.letter}`;
+            
+            // Add numbers for this column with column-specific color
+            for (let i = col.min; i <= col.max; i++) {
+                const numberElement = document.createElement('div');
+                numberElement.className = 'called-number';
+                numberElement.textContent = i;
+                numberElement.dataset.number = i;
+                numberElement.dataset.column = col.letter;
+                numberElement.dataset.color = col.color;
+                // Color is set by CSS class, no inline styles needed
+                numbersContainer.appendChild(numberElement);
+            }
+            
+            columnDiv.appendChild(numbersContainer);
+            this.calledNumbersGrid.appendChild(columnDiv);
+        });
+    }
+
+    updateCalledNumbersDisplay() {
+        // Remove recent class from previous number
+        if (this.lastCalledNumberElement) {
+            this.lastCalledNumberElement.classList.remove('called-recent');
         }
         
-        columnDiv.appendChild(numbersContainer);
-        this.calledNumbersGrid.appendChild(columnDiv);
-    });
-}
-updateCalledNumbersDisplay() {
-    // REMOVED: const columnColors = {...}
-    
-    // Update all called numbers
-    this.gameState.calledNumbers.forEach(number => {
-        // Find the element
-        const element = document.querySelector(`.called-number[data-number="${number}"]`);
-        if (element) {
-            element.classList.add('called');
-            // Use a neutral color for called numbers instead of column colors
-            element.style.backgroundColor = '#4CAF50'; // Green for called numbers
-            element.style.color = '#FFFFFF';
-            element.style.fontWeight = 'bold';
-            element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
-        }
-    });
-    
-    this.numbersCalled.textContent = this.gameState.calledNumbers.size;
-}
+        // Update all called numbers
+        this.gameState.calledNumbers.forEach(number => {
+            const element = document.querySelector(`.called-number[data-number="${number}"]`);
+            if (element) {
+                element.classList.add('called');
+                
+                // Get the column color from data attribute
+                const columnColor = element.dataset.color;
+                if (columnColor) {
+                    // Keep the column color for text
+                    element.style.color = columnColor;
+                }
+                
+                // Store the most recent called number for animation
+                if (number === Array.from(this.gameState.calledNumbers).pop()) {
+                    this.lastCalledNumberElement = element;
+                    element.classList.add('called-recent');
+                }
+            }
+        });
+        
+        this.numbersCalled.textContent = this.gameState.calledNumbers.size;
+    }
+
     updateDisplays() {
         this.activePlayers.textContent = this.gameState.activePlayers;
     }
@@ -525,51 +525,52 @@ updateCalledNumbersDisplay() {
         this.gameState.saveToSession();
     }
 
-updateNumberDisplay(number) {
-    // Determine BINGO letter
-    let letter = '';
-    for (const [l, range] of Object.entries(this.BINGO_RANGES)) {
-        if (number >= range.min && number <= range.max) {
-            letter = l;
-            break;
-        }
-    }
-    
-    // Get color based on letter
-    const letterColors = {
-        'B': '#FF0000',    // Red for B
-        'I': '#00FF00',    // Green for I  
-        'N': '#0000FF',    // Blue for N
-        'G': '#FFFF00',    // Yellow for G
-        'O': '#FF00FF'     // Magenta for O
-    };
-    
-    // Animate the number display
-    this.currentNumber.style.transform = 'scale(0.5)';
-    this.currentNumber.style.opacity = '0';
-    
-    setTimeout(() => {
-        this.currentNumber.textContent = number.toString().padStart(2, '0');
-        this.numberLetter.textContent = letter;
-        this.currentNumberDisplay.textContent = `${letter}-${number}`;
+    updateNumberDisplay(number) {
+        // Determine BINGO letter
+        let letter = '';
+        let columnColor = '#00b4d8'; // Default color
         
-        // Set color based on column
-        if (letterColors[letter]) {
-            this.currentNumber.style.color = letterColors[letter];
-            this.numberLetter.style.color = letterColors[letter];
+        for (const [l, data] of Object.entries(this.BINGO_RANGES)) {
+            if (number >= data.min && number <= data.max) {
+                letter = l;
+                columnColor = data.color;
+                break;
+            }
         }
         
-        this.currentNumber.style.transform = 'scale(1)';
-        this.currentNumber.style.opacity = '1';
-        this.currentNumber.classList.add('animate-number-pop');
+        // Animate the number display
+        this.currentNumber.style.transform = 'scale(0.5)';
+        this.currentNumber.style.opacity = '0';
+        this.numberLetter.style.transform = 'scale(0.5)';
+        this.numberLetter.style.opacity = '0';
         
         setTimeout(() => {
-            this.currentNumber.classList.remove('animate-number-pop');
-        }, 500);
-    }, 300);
-}
-        autoMarkNumbers(number) {
-        // Only mark if number was actually called
+            this.currentNumber.textContent = number.toString().padStart(2, '0');
+            this.numberLetter.textContent = letter;
+            this.currentNumberDisplay.textContent = `${letter}-${number}`;
+            
+            // Set color based on column
+            this.currentNumber.style.color = columnColor;
+            this.numberLetter.style.color = columnColor;
+            
+            // Add column class for CSS styling
+            this.currentNumber.className = 'current-number ' + letter.toLowerCase() + '-col';
+            this.numberLetter.className = 'number-letter ' + letter.toLowerCase() + '-col';
+            
+            this.currentNumber.style.transform = 'scale(1)';
+            this.currentNumber.style.opacity = '1';
+            this.numberLetter.style.transform = 'scale(1)';
+            this.numberLetter.style.opacity = '1';
+            
+            this.currentNumber.classList.add('animate-number-pop');
+            
+            setTimeout(() => {
+                this.currentNumber.classList.remove('animate-number-pop');
+            }, 500);
+        }, 300);
+    }
+
+    autoMarkNumbers(number) {
         if (!this.gameState.calledNumbers.has(number)) return;
         
         this.gameState.selectedCards.forEach((_, index) => {
@@ -577,14 +578,11 @@ updateNumberDisplay(number) {
             const bingoNumbers = this.bingoNumbers[cardId];
             
             if (bingoNumbers.includes(number)) {
-                // Find and mark the cell
                 const cells = document.querySelectorAll(`[data-card="${cardId}"]`);
                 cells.forEach(cell => {
                     if (parseInt(cell.dataset.number) === number) {
                         this.gameState.markedNumbers[cardId].add(number);
                         cell.classList.add('marked');
-                        
-                        // Check for winning line with validation
                         this.checkForWinningLine(cardId);
                     }
                 });
@@ -593,14 +591,12 @@ updateNumberDisplay(number) {
     }
 
     checkForExistingCalls() {
-        // Simulate some numbers already called
         const initialCalls = 5;
         for (let i = 0; i < initialCalls; i++) {
             const number = this.generateNextNumber();
             if (number) {
                 this.gameState.calledNumbers.add(number);
                 
-                // Auto-mark if enabled
                 if (this.gameState.isAutoMark) {
                     this.autoMarkNumbers(number);
                 }
@@ -627,15 +623,12 @@ updateNumberDisplay(number) {
     }
 
     startCaller() {
-        // Call first number immediately
         setTimeout(() => this.callNextNumber(), 1000);
         
-        // Set up interval for subsequent calls
         this.callIntervalId = setInterval(() => {
             this.callNextNumber();
         }, this.callInterval);
         
-        // Start next call countdown
         this.startNextCallTimer();
     }
 
@@ -655,12 +648,10 @@ updateNumberDisplay(number) {
     }
 
     setupAudio() {
-        // Set initial volume
         if (this.numberCallAudio) this.numberCallAudio.volume = 0.7;
         if (this.bingoAudio) this.bingoAudio.volume = 0.8;
         if (this.backgroundMusic) this.backgroundMusic.volume = 0.3;
         
-        // Try to play background music
         if (this.gameState.isAudioEnabled && this.backgroundMusic) {
             this.backgroundMusic.play().catch(e => console.log('Background music play failed:', e));
         }
@@ -690,11 +681,9 @@ updateNumberDisplay(number) {
         this.bingoBtn.addEventListener('click', () => {
             if (this.bingoBtn.disabled) return;
             
-            // Show confirmation
             this.winningLineText.textContent = `Claiming BINGO for ${this.gameState.playerName}!`;
             this.winningLineIndicator.classList.add('active');
             
-            // Play bingo sound
             BingoUtils.playAudio(this.bingoAudio, 0.8);
         });
         
@@ -706,7 +695,6 @@ updateNumberDisplay(number) {
                 this.audioToggle.style.color = '#00b4d8';
                 this.audioToggle.style.borderColor = '#00b4d8';
                 
-                // Resume audio
                 if (this.backgroundMusic) {
                     this.backgroundMusic.play().catch(e => console.log('Audio play failed:', e));
                 }
@@ -715,7 +703,6 @@ updateNumberDisplay(number) {
                 this.audioToggle.style.color = '#ff4b4b';
                 this.audioToggle.style.borderColor = '#ff4b4b';
                 
-                // Pause audio
                 if (this.backgroundMusic) {
                     this.backgroundMusic.pause();
                 }
@@ -732,17 +719,12 @@ updateNumberDisplay(number) {
             this.claimBingo();
         });
         
-        // Handle page visibility change
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                console.log('Game paused');
-                // Pause audio
                 if (this.backgroundMusic) {
                     this.backgroundMusic.pause();
                 }
             } else {
-                console.log('Game resumed');
-                // Resume audio
                 if (this.gameState.isAudioEnabled && this.backgroundMusic) {
                     this.backgroundMusic.play().catch(e => console.log('Audio play failed:', e));
                 }
@@ -751,7 +733,6 @@ updateNumberDisplay(number) {
     }
 
     claimBingo() {
-        // Prepare winner data
         const winnerData = {
             playerName: this.gameState.playerName,
             playerId: this.gameState.playerId,
@@ -765,13 +746,10 @@ updateNumberDisplay(number) {
             calledNumbers: this.gameState.calledNumbers.size
         };
         
-        // Store in sessionStorage for winner page
         sessionStorage.setItem('bingoWinner', JSON.stringify(winnerData));
         
-        // Send win data to backend
         this.sendWinData(winnerData);
         
-        // Navigate to winner page
         setTimeout(() => {
             BingoUtils.navigateTo('winner.html');
         }, 1000);
@@ -797,3 +775,4 @@ updateNumberDisplay(number) {
 document.addEventListener('DOMContentLoaded', () => {
     new GamePage();
 });
+[file content end]
