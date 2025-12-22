@@ -443,7 +443,23 @@ createCalledNumbersGrid() {
         numbersContainer.className = 'column-numbers';
         numbersContainer.id = `numbers-${col.letter}`;
         
+        // Add numbers for this column (1-15, 16-30, etc.)
+        for (let i = col.min; i <= col.max; i++) {
+            const numberElement = document.createElement('div');
+            numberElement.className = 'called-number';
+            numberElement.textContent = i;
+            numberElement.dataset.number = i;
+            numberElement.dataset.column = col.letter;
+            numberElement.style.color = col.color;
+            numberElement.style.borderLeft = `4px solid ${col.color}`;
+            numbersContainer.appendChild(numberElement);
+        }
         
+        columnDiv.appendChild(numbersContainer);
+        this.calledNumbersGrid.appendChild(columnDiv);
+    });
+}
+
 updateCalledNumbersDisplay() {
     const columnColors = {
         'B': '#FF0000',
