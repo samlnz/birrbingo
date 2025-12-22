@@ -309,7 +309,39 @@ class GamePage {
             winningLines.push('diag2');
             this.highlightWinningLine(cardId, 'diag', 2);
         }
+                // Check four corners
+        let cornersComplete = true;
+        let cornersAllCalled = true;
+        const corners = [
+            [0, 0], // Top-left
+            [0, 4], // Top-right
+            [4, 0], // Bottom-left
+            [4, 4]  // Bottom-right
+        ];
         
+        corners.forEach(([row, col]) => {
+            const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
+            const number = cell.dataset.number;
+            
+            if (!allMarked.has(number === 'FREE' ? 'FREE' : parseInt(number))) {
+                cornersComplete = false;
+            }
+            
+            if (number !== 'FREE' && !this.gameState.calledNumbers.has(parseInt(number))) {
+                cornersAllCalled = false;
+            }
+        });
+        
+        if (cornersComplete && cornersAllCalled && !this.gameState.winningLines[cardId].includes('corners')) {
+            winningLines.push('corners');
+            // Highlight the corners
+            corners.forEach(([row, col]) => {
+                const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.classList.add('winning-corner');
+                }
+            });
+        }
         // Add new winning lines
         winningLines.forEach(line => {
             if (!this.gameState.winningLines[cardId].includes(line)) {
@@ -380,30 +412,86 @@ class GamePage {
         this.updateDisplays();
     }
 
-    createCalledNumbersGrid() {
-        this.calledNumbersGrid.innerHTML = '';
+createCalledNumbersGrid() {
+    this.calledNumbersGrid.innerHTML = '';
+    
+    // Column configuration
+    const columns = [
+        { letter: 'B', min: 1, max: 15, color: '#FF0000' },
+        { letter: 'I', min: 16, max: 30, color: '#00FF00' },
+        { letter: 'N', min: 31, max: 45, color: '#0000FF' },
+        { letter: 'G', min: 46, max: 60, color: '#FFFF00' },
+        { letter: 'O', min: 61, max: 75, color: '#FF00FF' }
+    ];
+    
+    // Create each column
+    columns.forEach(col => {
+        const columnDiv = document.createElement('div');
+        columnDiv.className = 'bingo-column';
+        columnDiv.id = `column-${col.letter}`;
         
-        // Create 75 number cells
-        for (let i = 1; i <= 75; i++) {
+        // Column header (B, I, N, G, O)
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'column-header';
+        headerDiv.textContent = col.letter;
+        headerDiv.style.color = col.color;
+        headerDiv.style.borderColor = col.color;
+        columnDiv.appendChild(headerDiv);
+        
+        // Numbers container
+        const numbersContainer = document.createElement('div');
+        numbersContainer.className = 'column-numbers';
+        numbersContainer.id = `numbers-${col.letter}`;
+        
+        // Add numbers for this column (1-15, 16-30, etc.)
+        for (let i = col.min; i <= col.max; i++) {
             const numberElement = document.createElement('div');
             numberElement.className = 'called-number';
             numberElement.textContent = i;
             numberElement.dataset.number = i;
-            this.calledNumbersGrid.appendChild(numberElement);
+            numberElement.dataset.column = col.letter;
+            numberElement.style.color = col.color;
+            numberElement.style.borderLeft = `4px solid ${col.color}`;
+            numbersContainer.appendChild(numberElement);
         }
-    }
-
-    updateCalledNumbersDisplay() {
-        document.querySelectorAll('.called-number').forEach(element => {
-            const number = parseInt(element.dataset.number);
-            if (this.gameState.calledNumbers.has(number)) {
-                element.classList.add('called-recently');
-                setTimeout(() => element.classList.remove('called-recently'), 1000);
-            }
-        });
         
-        this.numbersCalled.textContent = this.gameState.calledNumbers.size;
-    }
+        columnDiv.appendChild(numbersContainer);
+        this.calledNumbersGrid.appendChild(columnDiv);
+    });
+}
+
+updateCalledNumbersDisplay() {
+    const columnColors = {
+        'B': '#FF0000',
+        'I': '#00FF00', 
+        'N': '#0000FF',
+        'G': '#FFFF00',
+        'O': '#FF00FF'
+    };
+    
+    // Update all called numbers
+    this.gameState.calledNumbers.forEach(number => {
+        // Find which column this number belongs to
+        let column = '';
+        if (number >= 1 && number <= 15) column = 'B';
+        else if (number >= 16 && number <= 30) column = 'I';
+        else if (number >= 31 && number <= 45) column = 'N';
+        else if (number >= 46 && number <= 60) column = 'G';
+        else if (number >= 61 && number <= 75) column = 'O';
+        
+        // Find the element
+        const element = document.querySelector(`.called-number[data-number="${number}"]`);
+        if (element) {
+            element.classList.add('called');
+            element.style.backgroundColor = columnColors[column];
+            element.style.color = '#FFFFFF';
+            element.style.fontWeight = 'bold';
+            element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
+        }
+    });
+    
+    this.numbersCalled.textContent = this.gameState.calledNumbers.size;
+}
 
     updateDisplays() {
         this.activePlayers.textContent = this.gameState.activePlayers;
@@ -452,35 +540,49 @@ class GamePage {
         this.gameState.saveToSession();
     }
 
-    updateNumberDisplay(number) {
-        // Determine BINGO letter
-        let letter = '';
-        for (const [l, range] of Object.entries(this.BINGO_RANGES)) {
-            if (number >= range.min && number <= range.max) {
-                letter = l;
-                break;
-            }
+updateNumberDisplay(number) {
+    // Determine BINGO letter
+    let letter = '';
+    for (const [l, range] of Object.entries(this.BINGO_RANGES)) {
+        if (number >= range.min && number <= range.max) {
+            letter = l;
+            break;
+        }
+    }
+    
+    // Get color based on letter
+    const letterColors = {
+        'B': '#FF0000',    // Red for B
+        'I': '#00FF00',    // Green for I  
+        'N': '#0000FF',    // Blue for N
+        'G': '#FFFF00',    // Yellow for G
+        'O': '#FF00FF'     // Magenta for O
+    };
+    
+    // Animate the number display
+    this.currentNumber.style.transform = 'scale(0.5)';
+    this.currentNumber.style.opacity = '0';
+    
+    setTimeout(() => {
+        this.currentNumber.textContent = number.toString().padStart(2, '0');
+        this.numberLetter.textContent = letter;
+        this.currentNumberDisplay.textContent = `${letter}-${number}`;
+        
+        // Set color based on column
+        if (letterColors[letter]) {
+            this.currentNumber.style.color = letterColors[letter];
+            this.numberLetter.style.color = letterColors[letter];
         }
         
-        // Animate the number display
-        this.currentNumber.style.transform = 'scale(0.5)';
-        this.currentNumber.style.opacity = '0';
+        this.currentNumber.style.transform = 'scale(1)';
+        this.currentNumber.style.opacity = '1';
+        this.currentNumber.classList.add('animate-number-pop');
         
         setTimeout(() => {
-            this.currentNumber.textContent = number.toString().padStart(2, '0');
-            this.numberLetter.textContent = letter;
-            this.currentNumberDisplay.textContent = `${letter}-${number}`;
-            
-            this.currentNumber.style.transform = 'scale(1)';
-            this.currentNumber.style.opacity = '1';
-            this.currentNumber.classList.add('animate-number-pop');
-            
-            setTimeout(() => {
-                this.currentNumber.classList.remove('animate-number-pop');
-            }, 500);
-        }, 300);
-    }
-
+            this.currentNumber.classList.remove('animate-number-pop');
+        }, 500);
+    }, 300);
+}
         autoMarkNumbers(number) {
         // Only mark if number was actually called
         if (!this.gameState.calledNumbers.has(number)) return;
