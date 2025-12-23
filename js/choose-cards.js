@@ -18,7 +18,6 @@ class ChooseCardsPage {
         this.selectionTimer = document.getElementById('selectionTimer');
         this.randomSelectBtn = document.getElementById('randomSelectBtn');
         this.clearSelectionBtn = document.getElementById('clearSelectionBtn');
-        this.confirmSelectionBtn = document.getElementById('confirmSelectionBtn');
         this.loadingOverlay = document.getElementById('loadingOverlay');
         this.loadingText = document.getElementById('loadingText');
         this.playerName = document.getElementById('playerName');
@@ -31,11 +30,12 @@ class ChooseCardsPage {
         this.maxCards = 2;
         this.selectionTime = 60;
         this.timerInterval = null;
+        this.autoConfirmTimer = null;
         
         this.init();
     }
 
-        init() {
+    init() {
         this.setupUserInfo();
         this.generateTakenCards();
         this.createCardGrid();
@@ -59,13 +59,6 @@ class ChooseCardsPage {
     }
 
     generateTakenCards() {
-        // Simulate 30-70% of cards already taken
-        const takenCount = Math.floor(Math.random() * 200) + 150;
-        while (this.takenCards.size < takenCount) {
-            const card = Math.floor(Math.random() * this.totalCards) + 1;
-            this.takenCards.add(card);
-        }
-    }    generateTakenCards() {
         // Only track real players who selected through the link
         // Start with empty taken cards
         this.takenCards = new Set();
@@ -98,6 +91,7 @@ class ChooseCardsPage {
             const index = this.gameState.selectedCards.indexOf(cardNumber);
             this.gameState.selectedCards.splice(index, 1);
             this.updateCardElements();
+            this.cancelAutoConfirm();
             return;
         }
         
@@ -114,6 +108,32 @@ class ChooseCardsPage {
         this.updateCardElements();
         this.updateSelectedCardsDisplay();
         this.updateDisplays();
+        
+        // Check if we have selected maximum cards
+        if (this.gameState.selectedCards.length >= this.maxCards) {
+            // Auto-confirm after 1 second
+            this.startAutoConfirm();
+        }
+    }
+
+    cancelAutoConfirm() {
+        if (this.autoConfirmTimer) {
+            clearTimeout(this.autoConfirmTimer);
+            this.autoConfirmTimer = null;
+        }
+    }
+
+    startAutoConfirm() {
+        // Cancel any existing timer
+        this.cancelAutoConfirm();
+        
+        // Show notification
+        BingoUtils.showNotification(`Selected ${this.maxCards} cards! Starting game in 2 seconds...`, 'success');
+        
+        // Start auto-confirm timer
+        this.autoConfirmTimer = setTimeout(() => {
+            this.confirmSelection();
+        }, 2000);
     }
 
     updateCardElements() {
@@ -138,9 +158,6 @@ class ChooseCardsPage {
         // Update previews
         this.updateCardPreview(1, this.gameState.selectedCards[0]);
         this.updateCardPreview(2, this.gameState.selectedCards[1]);
-        
-        // Update confirm button
-        this.confirmSelectionBtn.disabled = this.gameState.selectedCards.length === 0;
         
         // Update progress
         const progress = (this.gameState.selectedCards.length / this.maxCards) * 100;
@@ -276,6 +293,11 @@ class ChooseCardsPage {
         this.updateCardElements();
         this.updateSelectedCardsDisplay();
         this.updateDisplays();
+        
+        // If we reached max cards, start auto-confirm
+        if (this.gameState.selectedCards.length >= this.maxCards) {
+            this.startAutoConfirm();
+        }
     }
 
     clearSelection() {
@@ -283,6 +305,7 @@ class ChooseCardsPage {
         this.updateCardElements();
         this.updateSelectedCardsDisplay();
         this.updateDisplays();
+        this.cancelAutoConfirm();
     }
 
     autoSelectCards() {
@@ -293,8 +316,13 @@ class ChooseCardsPage {
     }
 
     confirmSelection() {
+        // Cancel auto-confirm timer if it exists
+        this.cancelAutoConfirm();
+        
         if (this.gameState.selectedCards.length === 0) {
-            BingoUtils.showNotification('Please select at least one card!', 'warning');
+            // If no cards selected, select random cards
+            this.randomSelectCards();
+            setTimeout(() => this.confirmSelection(), 1000);
             return;
         }
         
@@ -306,17 +334,14 @@ class ChooseCardsPage {
         setTimeout(() => {
             this.saveSelectionToBackend();
             this.proceedToGame();
-        }, 2000);
+        }, 1500);
     }
 
-        saveSelectionToBackend() {
+    saveSelectionToBackend() {
         // Add selected cards to taken cards
         this.gameState.selectedCards.forEach(card => {
             this.takenCards.add(card);
         });
-        
-        // DON'T simulate other players - only real players
-        // this.gameState.activePlayers++;  // REMOVED THIS LINE
         
         // Save game state
         this.gameState.saveToSession();
@@ -341,14 +366,13 @@ class ChooseCardsPage {
         this.loadingText.textContent = 'Starting Game...';
         
         setTimeout(() => {
-            BingoUtils.navigateTo('game.html');
+            window.location.href = 'game.html';
         }, 1500);
     }
 
     setupEventListeners() {
         this.randomSelectBtn.addEventListener('click', () => this.randomSelectCards());
         this.clearSelectionBtn.addEventListener('click', () => this.clearSelection());
-        this.confirmSelectionBtn.addEventListener('click', () => this.confirmSelection());
         
         // Handle page visibility change
         document.addEventListener('visibilitychange', () => {

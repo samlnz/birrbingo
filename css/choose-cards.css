@@ -308,22 +308,7 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-.btn-confirm {
-    background: linear-gradient(135deg, #00b4d8, #0077b6);
-    color: white;
-    min-width: 250px;
-}
-
-.btn-confirm:hover:not(:disabled) {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 180, 216, 0.4);
-    background: linear-gradient(135deg, #0096c7, #005f8a);
-}
-
-.btn-confirm:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+/* REMOVED: .btn-confirm styles */
 
 .btn-random {
     background: linear-gradient(135deg, #ff9e00, #ff7700);
@@ -418,5 +403,10 @@
     .control-btn {
         width: 100%;
         justify-content: center;
+    }
+    
+    .controls-section {
+        flex-direction: column;
+        gap: 15px;
     }
 }
