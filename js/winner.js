@@ -12,7 +12,9 @@ class WinnerPage {
             winningLines: { card1: 0, card2: 0 },
             totalLines: 0,
             gameTime: 0,
-            calledNumbers: 0
+            calledNumbers: 0,
+            winningPatternData: null,
+            cardData: null
         };
         
         // DOM elements
@@ -39,7 +41,7 @@ class WinnerPage {
         this.init();
     }
 
-        init() {
+    init() {
         this.loadWinnerData();
         this.displayWinnerInfo();
         this.displayWinningCards();
@@ -47,11 +49,6 @@ class WinnerPage {
         this.createConfetti();
         this.setupAudio();
         this.setupEventListeners();
-        
-        // Auto redirect after 5 seconds
-        setTimeout(() => {
-            this.handlePlayAgain();
-        }, 5000);
     }
 
     loadWinnerData() {
@@ -60,7 +57,6 @@ class WinnerPage {
             this.winnerData = JSON.parse(savedWinner);
         }
         
-        // Also load game state for additional info
         const gameState = JSON.parse(sessionStorage.getItem('bingoGameState') || '{}');
         this.winnerData.playerName = this.winnerData.playerName || gameState.playerName || 'Telegram User';
         this.winnerData.playerId = this.winnerData.playerId || gameState.playerId || '0000';
@@ -71,7 +67,6 @@ class WinnerPage {
         this.winnerAvatar.textContent = this.winnerData.playerName.charAt(0).toUpperCase();
         this.winnerTelegram.textContent = `@${this.winnerData.playerName.replace(/\s+/g, '').toLowerCase()}`;
         
-        // Set statistics
         this.totalLines.textContent = this.winnerData.totalLines;
         
         const minutes = Math.floor(this.winnerData.gameTime / 60);
@@ -81,69 +76,153 @@ class WinnerPage {
         
         this.numbersCalled.textContent = this.winnerData.calledNumbers;
         
-                // Calculate winnings (10 BIRR per player, 20% profit for admin)
-        const stake = 10; // 10 BIRR per player
+        const stake = 10;
         const totalPlayers = this.winnerData.totalPlayers || 1;
         const totalPrizePool = stake * totalPlayers;
-        const adminFee = totalPrizePool * 0.20; // 20% profit
+        const adminFee = totalPrizePool * 0.20;
         const winnerPrize = totalPrizePool - adminFee;
         
         this.prizeAmount.textContent = `${totalPrizePool} BIRR`;
         this.yourWinnings.textContent = `${winnerPrize} BIRR`;
         
-        // Random rank between 1-10
         this.playerRank.textContent = `#${Math.floor(Math.random() * 10) + 1}`;
     }
 
     displayWinningCards() {
         this.winningCards.innerHTML = '';
         
-        this.winnerData.cardNumbers.forEach((cardNumber, index) => {
-            const cardId = `card${index + 1}`;
-            const lines = this.winnerData.winningLines[cardId] || 0;
+        // Clear any existing content
+        this.winningCards.innerHTML = '';
+        
+        if (!this.winnerData.cardData) {
+            console.warn('No card data found in winner data');
+            return;
+        }
+        
+        // Display only cards that have winning lines
+        const hasCard1Win = this.winnerData.winningLines.card1 > 0;
+        const hasCard2Win = this.winnerData.winningLines.card2 > 0;
+        
+        if (hasCard1Win && this.winnerData.cardData.card1) {
+            this.createWinningCardDisplay(1, this.winnerData.cardData.card1);
+        }
+        
+        if (hasCard2Win && this.winnerData.cardData.card2) {
+            this.createWinningCardDisplay(2, this.winnerData.cardData.card2);
+        }
+        
+        if (!hasCard1Win && !hasCard2Win) {
+            this.winningCards.innerHTML = `
+                <div class="no-winning-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>No winning card data available</h3>
+                    <p>Congratulations on your win!</p>
+                </div>
+            `;
+        }
+    }
+
+    createWinningCardDisplay(cardIndex, cardData) {
+        const cardNumber = this.winnerData.cardNumbers[cardIndex - 1];
+        const winningLines = cardData.winningLines || [];
+        const winningCells = cardData.winningCells || [];
+        
+        const cardElement = document.createElement('div');
+        cardElement.className = 'winning-card-display';
+        cardElement.innerHTML = `
+            <div class="winning-card-header">
+                <h3><i class="fas fa-dice-${cardIndex === 1 ? 'one' : 'two'}"></i> WINNING CARD #${cardNumber}</h3>
+                <div class="card-number-badge">Card #${cardNumber}</div>
+            </div>
+            <div class="winning-card-grid" id="winningCard${cardIndex}Grid">
+                <!-- Bingo grid will be generated here -->
+            </div>
+            <div class="winning-card-stats">
+                <div class="winning-stat">
+                    <div class="winning-stat-value">${winningLines.length}</div>
+                    <div class="winning-stat-label">Winning Lines</div>
+                </div>
+                <div class="winning-stat">
+                    <div class="winning-stat-value">${cardData.markedNumbers ? cardData.markedNumbers.length + 1 : 'N/A'}</div>
+                    <div class="winning-stat-label">Marked Numbers</div>
+                </div>
+                <div class="winning-stat">
+                    <div class="winning-stat-value">${this.winnerData.totalLines}</div>
+                    <div class="winning-stat-label">Total Lines Won</div>
+                </div>
+            </div>
+            ${winningLines.length > 0 ? `
+                <div class="winning-pattern-info">
+                    <h4><i class="fas fa-star"></i> Winning Pattern:</h4>
+                    <p>${winningLines.join(', ')}</p>
+                </div>
+            ` : ''}
+        `;
+        
+        this.winningCards.appendChild(cardElement);
+        
+        // Generate the bingo grid
+        this.generateWinningCardGrid(cardIndex, cardData);
+    }
+
+    generateWinningCardGrid(cardIndex, cardData) {
+        const gridContainer = document.getElementById(`winningCard${cardIndex}Grid`);
+        if (!gridContainer) return;
+        
+        gridContainer.innerHTML = '';
+        
+        // Create column headers
+        ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
+            const headerCell = document.createElement('div');
+            headerCell.className = 'grid-header';
+            headerCell.textContent = letter;
+            gridContainer.appendChild(headerCell);
+        });
+        
+        // Create the 5x5 grid (25 cells total)
+        for (let i = 0; i < 25; i++) {
+            const row = Math.floor(i / 5);
+            const col = i % 5;
             
-            if (lines > 0) {
-                const cardElement = document.createElement('div');
-                cardElement.className = 'winning-card';
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            
+            // Determine if this is the free space
+            const isFreeSpace = row === 2 && col === 2;
+            
+            if (isFreeSpace) {
+                cell.textContent = 'FREE';
+                cell.className += ' free marked';
+            } else {
+                // Get the number from cardData.numbers
+                // Note: cardData.numbers is in column-major order
+                const numberIndex = col * 5 + row;
+                const number = cardData.numbers ? cardData.numbers[numberIndex] : '??';
+                cell.textContent = number;
                 
-                const lineTypes = ['Horizontal', 'Vertical', 'Diagonal'];
-                const lineBadges = [];
-                
-                for (let i = 0; i < lines; i++) {
-                    const lineType = lineTypes[Math.min(i, 2)];
-                    lineBadges.push(`
-                        <div class="line-badge">
-                            <i class="fas fa-star"></i>
-                            ${lineType} Line
-                        </div>
-                    `);
+                // Check if this number is marked
+                if (cardData.markedNumbers && cardData.markedNumbers.includes(number)) {
+                    cell.className += ' marked';
                 }
                 
-                cardElement.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3><i class="fas fa-dice-${index === 0 ? 'one' : 'two'}"></i> WINNING CARD</h3>
-                        <div class="card-number-badge">#${cardNumber}</div>
-                    </div>
-                    <div style="color: #90e0ef; margin-bottom: 15px;">
-                        Completed <strong style="color: #4CAF50;">${lines} line${lines > 1 ? 's' : ''}</strong>
-                    </div>
-                    <div class="winning-lines">
-                        ${lineBadges.join('')}
-                    </div>
-                `;
-                
-                this.winningCards.appendChild(cardElement);
+                // Check if this cell is part of winning pattern
+                if (cardData.winningCells && cardData.winningCells.includes(i)) {
+                    cell.className += ' winning';
+                }
             }
-        });
+            
+            // Add column-specific styling
+            cell.setAttribute('data-col', col);
+            
+            gridContainer.appendChild(cell);
+        }
     }
 
     setupGameSummary() {
-        // Set game summary
         this.totalPlayers.textContent = Math.floor(Math.random() * 300) + 200;
         this.cardsInPlay.textContent = Math.floor(this.totalPlayers.textContent * 1.5);
         this.callSpeed.textContent = '5s';
         
-        // Set random prize pool
         const prizePool = Math.floor(Math.random() * 10000) + 5000;
         this.prizeAmount.textContent = `$${prizePool}`;
     }
@@ -173,7 +252,6 @@ class WinnerPage {
     }
 
     setupAudio() {
-        // Set volume
         if (this.winnerAudio) {
             this.winnerAudio.volume = 0.7;
             this.winnerAudio.play().catch(e => console.log('Audio play failed:', e));
@@ -198,23 +276,19 @@ class WinnerPage {
         this.playAgainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> LOADING...';
         this.playAgainBtn.disabled = true;
         
-        // Clear session storage
         sessionStorage.clear();
         
-        // Navigate back to main menu
         setTimeout(() => {
             BingoUtils.navigateTo('index.html');
         }, 1500);
     }
 
     handleLeaderboard() {
-        // In a real app, this would fetch and display leaderboard data
         const leaderboardData = this.getLeaderboardData();
         this.showLeaderboard(leaderboardData);
     }
 
     getLeaderboardData() {
-        // Simulate leaderboard data
         return [
             { rank: 1, name: this.winnerData.playerName, score: this.winnerData.totalLines * 1000, time: this.winnerData.gameTime },
             { rank: 2, name: 'Player2', score: 4500, time: 85 },
@@ -241,14 +315,12 @@ class WinnerPage {
             </div>
         `;
         
-        // Create modal
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.innerHTML = leaderboardHTML;
         
         document.body.appendChild(modal);
         
-        // Add close functionality
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 document.body.removeChild(modal);
@@ -257,7 +329,6 @@ class WinnerPage {
     }
 
     handleShare() {
-        // Prepare share message
         const shareMessage = `🎉 I just won BINGO in Telegram Casino!\n\n` +
                            `🏆 Victory: ${this.winnerData.totalLines} winning lines\n` +
                            `⏱️ Time: ${this.gameDuration.textContent}\n` +
@@ -265,12 +336,10 @@ class WinnerPage {
                            `💰 Winnings: ${this.yourWinnings.textContent}\n\n` +
                            `Play now and try your luck!`;
         
-        // Try to share via Telegram first
         if (this.telegramManager.shareMessage(shareMessage)) {
             return;
         }
         
-        // Fallback to clipboard
         if (navigator.clipboard) {
             navigator.clipboard.writeText(shareMessage).then(() => {
                 BingoUtils.showNotification('Victory message copied to clipboard! Share it with your friends.', 'success');
@@ -297,7 +366,6 @@ class WinnerPage {
         
         document.body.appendChild(shareDialog);
         
-        // Add copy functionality
         document.getElementById('copyMessageBtn').addEventListener('click', () => {
             const textarea = shareDialog.querySelector('textarea');
             textarea.select();
@@ -306,7 +374,6 @@ class WinnerPage {
             document.body.removeChild(shareDialog);
         });
         
-        // Close on click outside
         shareDialog.addEventListener('click', (e) => {
             if (e.target === shareDialog) {
                 document.body.removeChild(shareDialog);
@@ -315,7 +382,6 @@ class WinnerPage {
     }
 }
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new WinnerPage();
 });
