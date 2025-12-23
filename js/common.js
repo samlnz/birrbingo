@@ -1,3 +1,5 @@
+[file name]: common.js
+[file content begin]
 // Common utility functions for the Bingo game
 
 class GameState {
@@ -12,6 +14,7 @@ class GameState {
         this.activePlayers = 0;
         this.isAudioEnabled = true;
         this.isAutoMark = true;
+        this.gameActive = true; // Add this to track game state
     }
 
     saveToSession() {
@@ -28,7 +31,8 @@ class GameState {
             winningLines: this.winningLines,
             activePlayers: this.activePlayers,
             isAudioEnabled: this.isAudioEnabled,
-            isAutoMark: this.isAutoMark
+            isAutoMark: this.isAutoMark,
+            gameActive: this.gameActive // Save this too
         }));
     }
 
@@ -49,6 +53,7 @@ class GameState {
             this.activePlayers = data.activePlayers || 0;
             this.isAudioEnabled = data.isAudioEnabled !== undefined ? data.isAudioEnabled : true;
             this.isAutoMark = data.isAutoMark !== undefined ? data.isAutoMark : true;
+            this.gameActive = data.gameActive !== undefined ? data.gameActive : true; // Load this too
         }
     }
 
@@ -173,7 +178,8 @@ class BingoUtils {
             window.location.href = url;
         }
     }
-        static autoRedirect(url, delay = 3000, message = "Redirecting...") {
+    
+    static autoRedirect(url, delay = 3000, message = "Redirecting...") {
         const overlay = document.createElement('div');
         overlay.className = 'auto-win-notification';
         overlay.innerHTML = `
@@ -201,6 +207,94 @@ class BingoUtils {
             }
         }, 1000);
     }
+    
+    // NEW: Method to check if any winning pattern exists
+    static hasWinningPattern(cardId, markedNumbers, calledNumbers) {
+        const allMarked = new Set(markedNumbers);
+        allMarked.add('FREE');
+        
+        // Check rows
+        for (let row = 0; row < 5; row++) {
+            let rowComplete = true;
+            for (let col = 0; col < 5; col++) {
+                const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
+                if (!cell) continue;
+                
+                const number = cell.dataset.number;
+                const isFreeSpace = row === 2 && col === 2;
+                
+                if (!isFreeSpace) {
+                    const num = parseInt(number);
+                    if (!allMarked.has(num) || !calledNumbers.has(num)) {
+                        rowComplete = false;
+                        break;
+                    }
+                }
+            }
+            if (rowComplete) return true;
+        }
+        
+        // Check columns
+        for (let col = 0; col < 5; col++) {
+            let colComplete = true;
+            for (let row = 0; row < 5; row++) {
+                const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
+                if (!cell) continue;
+                
+                const number = cell.dataset.number;
+                const isFreeSpace = row === 2 && col === 2;
+                
+                if (!isFreeSpace) {
+                    const num = parseInt(number);
+                    if (!allMarked.has(num) || !calledNumbers.has(num)) {
+                        colComplete = false;
+                        break;
+                    }
+                }
+            }
+            if (colComplete) return true;
+        }
+        
+        // Check diagonal (top-left to bottom-right)
+        let diag1Complete = true;
+        for (let i = 0; i < 5; i++) {
+            const cell = document.querySelector(`[data-card="${cardId}"][data-row="${i}"][data-col="${i}"]`);
+            if (!cell) continue;
+            
+            const number = cell.dataset.number;
+            const isFreeSpace = i === 2;
+            
+            if (!isFreeSpace) {
+                const num = parseInt(number);
+                if (!allMarked.has(num) || !calledNumbers.has(num)) {
+                    diag1Complete = false;
+                    break;
+                }
+            }
+        }
+        if (diag1Complete) return true;
+        
+        // Check diagonal (top-right to bottom-left)
+        let diag2Complete = true;
+        for (let i = 0; i < 5; i++) {
+            const cell = document.querySelector(`[data-card="${cardId}"][data-row="${i}"][data-col="${4 - i}"]`);
+            if (!cell) continue;
+            
+            const number = cell.dataset.number;
+            const isFreeSpace = i === 2;
+            
+            if (!isFreeSpace) {
+                const num = parseInt(number);
+                if (!allMarked.has(num) || !calledNumbers.has(num)) {
+                    diag2Complete = false;
+                    break;
+                }
+            }
+        }
+        if (diag2Complete) return true;
+        
+        return false;
+    }
 }
 
 // Initialize global game state
@@ -210,3 +304,4 @@ const gameState = new GameState();
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { GameState, BingoUtils, gameState };
 }
+[file content end]
