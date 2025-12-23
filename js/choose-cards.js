@@ -84,29 +84,31 @@ class ChooseCardsPage {
     }
 
     selectCard(cardNumber) {
-        // Check if card is already selected - if so, deselect it
-        const index = this.gameState.selectedCards.indexOf(cardNumber);
-        
-        if (index > -1) {
-            // Card is already selected - deselect it
+        // Check if card is already selected
+        if (this.gameState.selectedCards.includes(cardNumber)) {
+            // Deselect card
+            const index = this.gameState.selectedCards.indexOf(cardNumber);
             this.gameState.selectedCards.splice(index, 1);
-            BingoUtils.showNotification(`Card #${cardNumber} deselected`, 'info');
-        } else {
-            // Check if max cards reached
-            if (this.gameState.selectedCards.length >= this.maxCards) {
-                BingoUtils.showNotification(`You can only select ${this.maxCards} cards maximum`, 'warning');
-                return;
-            }
-            
-            // Add card to selection
-            this.gameState.selectedCards.push(cardNumber);
-            BingoUtils.showNotification(`Card #${cardNumber} selected!`, 'success');
+            this.updateCardElements();
+            return;
         }
+        
+        // Check if max cards reached
+        if (this.gameState.selectedCards.length >= this.maxCards) {
+            BingoUtils.showNotification(`You can only select ${this.maxCards} cards maximum`, 'warning');
+            return;
+        }
+        
+        // Add card to selection
+        this.gameState.selectedCards.push(cardNumber);
         
         // Update displays
         this.updateCardElements();
         this.updateSelectedCardsDisplay();
         this.updateDisplays();
+        
+        // Show selection confirmation (but don't auto-start)
+        BingoUtils.showNotification(`Card #${cardNumber} selected! Game will start when timer reaches 0.`, 'success');
     }
 
     updateCardElements() {
@@ -151,35 +153,47 @@ class ChooseCardsPage {
             return;
         }
         
-        // Generate bingo card preview based on card index
+        // Generate random bingo card preview
         previewElement.innerHTML = '';
-        let cardNumbers;
-        
-        if (cardIndex === 1) {
-            // First card: deterministic
-            cardNumbers = BingoUtils.generateDeterministicBingoCardNumbers(cardNumber);
-        } else {
-            // Second card: randomized
-            cardNumbers = BingoUtils.generateRandomBingoCardNumbers(cardNumber);
-        }
+        const cardNumbers = this.generateBingoCardNumbers();
         
         for (let i = 0; i < 25; i++) {
             const cell = document.createElement('div');
             cell.className = 'preview-cell';
             
-            const row = Math.floor(i / 5);
-            const col = i % 5;
-            
-            if (row === 2 && col === 2) { // Center is FREE
+            if (i === 12) { // Center is FREE
                 cell.textContent = 'FREE';
                 cell.classList.add('free');
             } else {
-                const numberIndex = col * 5 + row;
-                cell.textContent = cardNumbers[numberIndex] || '';
+                cell.textContent = cardNumbers[i] || '';
             }
             
             previewElement.appendChild(cell);
         }
+    }
+
+    generateBingoCardNumbers() {
+        const numbers = new Set();
+        const ranges = [
+            {min: 1, max: 15},
+            {min: 16, max: 30},
+            {min: 31, max: 45},
+            {min: 46, max: 60},
+            {min: 61, max: 75}
+        ];
+        
+        // Generate 5 numbers for each column
+        const cardNumbers = [];
+        for (let col = 0; col < 5; col++) {
+            const colNumbers = new Set();
+            while (colNumbers.size < 5) {
+                const num = Math.floor(Math.random() * (ranges[col].max - ranges[col].min + 1)) + ranges[col].min;
+                colNumbers.add(num);
+            }
+            cardNumbers.push(...Array.from(colNumbers));
+        }
+        
+        return cardNumbers;
     }
 
     updateDisplays() {
@@ -254,12 +268,13 @@ class ChooseCardsPage {
     }
 
     randomSelectCards() {
-        // Clear any existing selection
-        this.gameState.selectedCards = [];
+        if (this.gameState.selectedCards.length >= this.maxCards) {
+            this.clearSelection();
+        }
         
         const availableCards = [];
         for (let i = 1; i <= this.totalCards; i++) {
-            if (!this.takenCards.has(i)) {
+            if (!this.takenCards.has(i) && !this.gameState.selectedCards.includes(i)) {
                 availableCards.push(i);
             }
         }
@@ -276,7 +291,7 @@ class ChooseCardsPage {
         }
         
         // Select required number of cards
-        const cardsToSelect = Math.min(this.maxCards, availableCards.length);
+        const cardsToSelect = Math.min(this.maxCards - this.gameState.selectedCards.length, availableCards.length);
         for (let i = 0; i < cardsToSelect; i++) {
             this.gameState.selectedCards.push(availableCards[i]);
         }
@@ -286,7 +301,7 @@ class ChooseCardsPage {
         this.updateDisplays();
         
         // Show notification for selected cards
-        const selectedCardsText = this.gameState.selectedCards.join(', ');
+        const selectedCardsText = this.gameState.selectedCards.slice(-cardsToSelect).join(', ');
         BingoUtils.showNotification(`Randomly selected cards: ${selectedCardsText}`, 'success');
     }
 
