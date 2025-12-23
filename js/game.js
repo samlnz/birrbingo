@@ -30,6 +30,9 @@ class GamePage {
         this.bingoBtn = document.getElementById('bingoBtn');
         this.audioToggle = document.getElementById('audioToggle');
         this.audioSettingsBtn = document.getElementById('audioSettingsBtn');
+        this.winningLineIndicator = document.getElementById('winningLineIndicator');
+        this.winningLineText = document.getElementById('winningLineText');
+        this.claimBingoBtn = document.getElementById('claimBingoBtn');
         
         // Audio elements
         this.numberCallAudio = document.getElementById('numberCallAudio');
@@ -346,6 +349,10 @@ class GamePage {
             }
         });
         
+        // If we have a new winning line, show indicator
+        if (winningLines.length > 0) {
+            this.showWinningLineIndicator(cardId, winningLines);
+        }
         
         this.updateCardStats(cardId);
     }
@@ -683,7 +690,10 @@ updateNumberDisplay(number) {
         this.bingoBtn.addEventListener('click', () => {
             if (this.bingoBtn.disabled) return;
             
-           
+            // Show confirmation
+            this.winningLineText.textContent = `Claiming BINGO for ${this.gameState.playerName}!`;
+            this.winningLineIndicator.classList.add('active');
+            
             // Play bingo sound
             BingoUtils.playAudio(this.bingoAudio, 0.8);
         });
@@ -718,6 +728,9 @@ updateNumberDisplay(number) {
             BingoUtils.showNotification('Audio settings would open here.', 'info');
         });
         
+        this.claimBingoBtn.addEventListener('click', () => {
+            this.claimBingo();
+        });
         
         // Handle page visibility change
         document.addEventListener('visibilitychange', () => {
