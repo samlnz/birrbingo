@@ -787,9 +787,10 @@ class GamePage {
         
         this.sendWinData(winnerData);
         
+        // Redirect immediately to winner page
         setTimeout(() => {
-            BingoUtils.navigateTo('winner.html');
-        }, 1000);
+            window.location.href = 'winner.html';
+        }, 100);
     }
 
     sendWinData(winnerData) {

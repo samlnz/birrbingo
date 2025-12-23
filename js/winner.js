@@ -18,23 +18,9 @@ class WinnerPage {
         };
         
         // DOM elements
-        this.winnerAvatar = document.getElementById('winnerAvatar');
-        this.winnerName = document.getElementById('winnerName');
-        this.winnerTelegram = document.getElementById('winnerTelegram');
-        this.totalLines = document.getElementById('totalLines');
-        this.gameDuration = document.getElementById('gameDuration');
-        this.numbersCalled = document.getElementById('numbersCalled');
-        this.playerRank = document.getElementById('playerRank');
-        this.prizeAmount = document.getElementById('prizeAmount');
-        this.yourWinnings = document.getElementById('yourWinnings');
-        this.totalPlayers = document.getElementById('totalPlayers');
-        this.cardsInPlay = document.getElementById('cardsInPlay');
-        this.winningMoment = document.getElementById('winningMoment');
-        this.callSpeed = document.getElementById('callSpeed');
+        this.winnerContainer = document.querySelector('.winner-container');
         this.winningCards = document.getElementById('winningCards');
         this.playAgainBtn = document.getElementById('playAgainBtn');
-        this.leaderboardBtn = document.getElementById('leaderboardBtn');
-        this.shareBtn = document.getElementById('shareBtn');
         this.confettiContainer = document.getElementById('confettiContainer');
         this.winnerAudio = document.getElementById('winnerAudio');
         
@@ -43,138 +29,102 @@ class WinnerPage {
 
     init() {
         this.loadWinnerData();
-        this.displayWinnerInfo();
-        this.displayWinningCards();
-        this.setupGameSummary();
         this.createConfetti();
         this.setupAudio();
         this.setupEventListeners();
+        
+        // Show winning card after a short delay for effect
+        setTimeout(() => {
+            this.displayWinningCard();
+        }, 500);
     }
 
     loadWinnerData() {
         const savedWinner = sessionStorage.getItem('bingoWinner');
         if (savedWinner) {
             this.winnerData = JSON.parse(savedWinner);
+            console.log('Winner data loaded:', this.winnerData);
+        } else {
+            console.warn('No winner data found in sessionStorage');
+            // Show default card for testing
+            this.showDefaultCard();
         }
-        
-        const gameState = JSON.parse(sessionStorage.getItem('bingoGameState') || '{}');
-        this.winnerData.playerName = this.winnerData.playerName || gameState.playerName || 'Telegram User';
-        this.winnerData.playerId = this.winnerData.playerId || gameState.playerId || '0000';
     }
 
-    displayWinnerInfo() {
-        this.winnerName.textContent = this.winnerData.playerName;
-        this.winnerAvatar.textContent = this.winnerData.playerName.charAt(0).toUpperCase();
-        this.winnerTelegram.textContent = `@${this.winnerData.playerName.replace(/\s+/g, '').toLowerCase()}`;
+    displayWinningCard() {
+        // Clear the entire winner container
+        this.winnerContainer.innerHTML = '';
         
-        this.totalLines.textContent = this.winnerData.totalLines;
+        // Create minimal container
+        const cardContainer = document.createElement('div');
+        cardContainer.className = 'minimal-card-container';
         
-        const minutes = Math.floor(this.winnerData.gameTime / 60);
-        const seconds = this.winnerData.gameTime % 60;
-        this.gameDuration.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        this.winningMoment.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        // Add back button at the top
+        const backButton = document.createElement('button');
+        backButton.className = 'back-to-game-btn';
+        backButton.innerHTML = '<i class="fas fa-arrow-left"></i> BACK TO GAME';
+        backButton.addEventListener('click', () => {
+            this.handlePlayAgain();
+        });
         
-        this.numbersCalled.textContent = this.winnerData.calledNumbers;
-        
-        const stake = 10;
-        const totalPlayers = this.winnerData.totalPlayers || 1;
-        const totalPrizePool = stake * totalPlayers;
-        const adminFee = totalPrizePool * 0.20;
-        const winnerPrize = totalPrizePool - adminFee;
-        
-        this.prizeAmount.textContent = `${totalPrizePool} BIRR`;
-        this.yourWinnings.textContent = `${winnerPrize} BIRR`;
-        
-        this.playerRank.textContent = `#${Math.floor(Math.random() * 10) + 1}`;
-    }
-
-    displayWinningCards() {
-        this.winningCards.innerHTML = '';
-        
-        // Clear any existing content
-        this.winningCards.innerHTML = '';
-        
-        if (!this.winnerData.cardData) {
-            console.warn('No card data found in winner data');
-            return;
-        }
+        cardContainer.appendChild(backButton);
         
         // Display only cards that have winning lines
         const hasCard1Win = this.winnerData.winningLines.card1 > 0;
         const hasCard2Win = this.winnerData.winningLines.card2 > 0;
         
-        if (hasCard1Win && this.winnerData.cardData.card1) {
-            this.createWinningCardDisplay(1, this.winnerData.cardData.card1);
+        if ((hasCard1Win || hasCard2Win) && this.winnerData.cardData) {
+            if (hasCard1Win && this.winnerData.cardData.card1) {
+                this.createScaledWinningCard(1, this.winnerData.cardData.card1, cardContainer);
+            }
+            
+            if (hasCard2Win && this.winnerData.cardData.card2) {
+                this.createScaledWinningCard(2, this.winnerData.cardData.card2, cardContainer);
+            }
+        } else {
+            this.showDefaultCard();
         }
         
-        if (hasCard2Win && this.winnerData.cardData.card2) {
-            this.createWinningCardDisplay(2, this.winnerData.cardData.card2);
-        }
+        // Add play again button at bottom
+        const playAgainBtn = document.createElement('button');
+        playAgainBtn.className = 'play-again-minimal-btn';
+        playAgainBtn.innerHTML = '<i class="fas fa-redo"></i> PLAY AGAIN';
+        playAgainBtn.addEventListener('click', () => {
+            this.handlePlayAgain();
+        });
         
-        if (!hasCard1Win && !hasCard2Win) {
-            this.winningCards.innerHTML = `
-                <div class="no-winning-card">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3>No winning card data available</h3>
-                    <p>Congratulations on your win!</p>
-                </div>
-            `;
-        }
+        cardContainer.appendChild(playAgainBtn);
+        this.winnerContainer.appendChild(cardContainer);
     }
 
-    createWinningCardDisplay(cardIndex, cardData) {
+    createScaledWinningCard(cardIndex, cardData, container) {
         const cardNumber = this.winnerData.cardNumbers[cardIndex - 1];
         const winningLines = cardData.winningLines || [];
         const winningCells = cardData.winningCells || [];
         
         const cardElement = document.createElement('div');
-        cardElement.className = 'winning-card-display';
-        cardElement.innerHTML = `
-            <div class="winning-card-header">
-                <h3><i class="fas fa-dice-${cardIndex === 1 ? 'one' : 'two'}"></i> WINNING CARD #${cardNumber}</h3>
-                <div class="card-number-badge">Card #${cardNumber}</div>
+        cardElement.className = 'scaled-winning-card';
+        
+        // Card header
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'scaled-card-header';
+        headerDiv.innerHTML = `
+            <h2><i class="fas fa-trophy"></i> WINNING CARD #${cardNumber}</h2>
+            <div class="player-info-mini">
+                <div class="mini-avatar">${this.winnerData.playerName.charAt(0).toUpperCase()}</div>
+                <div class="mini-player-name">${this.winnerData.playerName}</div>
             </div>
-            <div class="winning-card-grid" id="winningCard${cardIndex}Grid">
-                <!-- Bingo grid will be generated here -->
-            </div>
-            <div class="winning-card-stats">
-                <div class="winning-stat">
-                    <div class="winning-stat-value">${winningLines.length}</div>
-                    <div class="winning-stat-label">Winning Lines</div>
-                </div>
-                <div class="winning-stat">
-                    <div class="winning-stat-value">${cardData.markedNumbers ? cardData.markedNumbers.length + 1 : 'N/A'}</div>
-                    <div class="winning-stat-label">Marked Numbers</div>
-                </div>
-                <div class="winning-stat">
-                    <div class="winning-stat-value">${this.winnerData.totalLines}</div>
-                    <div class="winning-stat-label">Total Lines Won</div>
-                </div>
-            </div>
-            ${winningLines.length > 0 ? `
-                <div class="winning-pattern-info">
-                    <h4><i class="fas fa-star"></i> Winning Pattern:</h4>
-                    <p>${winningLines.join(', ')}</p>
-                </div>
-            ` : ''}
         `;
+        cardElement.appendChild(headerDiv);
         
-        this.winningCards.appendChild(cardElement);
-        
-        // Generate the bingo grid
-        this.generateWinningCardGrid(cardIndex, cardData);
-    }
-
-    generateWinningCardGrid(cardIndex, cardData) {
-        const gridContainer = document.getElementById(`winningCard${cardIndex}Grid`);
-        if (!gridContainer) return;
-        
-        gridContainer.innerHTML = '';
+        // Create the scaled bingo grid
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'scaled-bingo-grid';
         
         // Create column headers
         ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
             const headerCell = document.createElement('div');
-            headerCell.className = 'grid-header';
+            headerCell.className = 'scaled-grid-header';
             headerCell.textContent = letter;
             gridContainer.appendChild(headerCell);
         });
@@ -185,46 +135,176 @@ class WinnerPage {
             const col = i % 5;
             
             const cell = document.createElement('div');
-            cell.className = 'grid-cell';
+            cell.className = 'scaled-grid-cell';
             
             // Determine if this is the free space
             const isFreeSpace = row === 2 && col === 2;
             
             if (isFreeSpace) {
                 cell.textContent = 'FREE';
-                cell.className += ' free marked';
+                cell.className += ' scaled-free scaled-marked';
             } else {
                 // Get the number from cardData.numbers
                 // Note: cardData.numbers is in column-major order
                 const numberIndex = col * 5 + row;
                 const number = cardData.numbers ? cardData.numbers[numberIndex] : '??';
                 cell.textContent = number;
+                cell.setAttribute('data-number', number);
                 
                 // Check if this number is marked
                 if (cardData.markedNumbers && cardData.markedNumbers.includes(number)) {
-                    cell.className += ' marked';
+                    cell.className += ' scaled-marked';
                 }
                 
                 // Check if this cell is part of winning pattern
                 if (cardData.winningCells && cardData.winningCells.includes(i)) {
-                    cell.className += ' winning';
+                    cell.className += ' scaled-winning';
                 }
             }
             
             // Add column-specific styling
             cell.setAttribute('data-col', col);
+            cell.setAttribute('data-index', i);
             
             gridContainer.appendChild(cell);
         }
+        
+        cardElement.appendChild(gridContainer);
+        
+        // Winning pattern info
+        if (winningLines.length > 0) {
+            const patternInfo = document.createElement('div');
+            patternInfo.className = 'scaled-pattern-info';
+            patternInfo.innerHTML = `
+                <h3><i class="fas fa-star"></i> WINNING PATTERN</h3>
+                <p>${winningLines.join(', ')}</p>
+            `;
+            cardElement.appendChild(patternInfo);
+        }
+        
+        // Card stats
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'scaled-card-stats';
+        statsDiv.innerHTML = `
+            <div class="scaled-stat">
+                <div class="scaled-stat-value">${winningLines.length}</div>
+                <div class="scaled-stat-label">Winning Lines</div>
+            </div>
+            <div class="scaled-stat">
+                <div class="scaled-stat-value">${cardData.markedNumbers ? cardData.markedNumbers.length + 1 : 'N/A'}</div>
+                <div class="scaled-stat-label">Marked Numbers</div>
+            </div>
+            <div class="scaled-stat">
+                <div class="scaled-stat-value">${this.winnerData.gameTime}s</div>
+                <div class="scaled-stat-label">Game Time</div>
+            </div>
+        `;
+        cardElement.appendChild(statsDiv);
+        
+        container.appendChild(cardElement);
     }
 
-    setupGameSummary() {
-        this.totalPlayers.textContent = Math.floor(Math.random() * 300) + 200;
-        this.cardsInPlay.textContent = Math.floor(this.totalPlayers.textContent * 1.5);
-        this.callSpeed.textContent = '5s';
+    showDefaultCard() {
+        // Show a default card for testing
+        this.winnerContainer.innerHTML = `
+            <div class="minimal-card-container">
+                <button class="back-to-game-btn" id="backBtn">
+                    <i class="fas fa-arrow-left"></i> BACK TO GAME
+                </button>
+                
+                <div class="scaled-winning-card">
+                    <div class="scaled-card-header">
+                        <h2><i class="fas fa-trophy"></i> BINGO WINNER!</h2>
+                        <div class="player-info-mini">
+                            <div class="mini-avatar">T</div>
+                            <div class="mini-player-name">Telegram User</div>
+                        </div>
+                    </div>
+                    
+                    <div class="scaled-bingo-grid">
+                        <!-- This is a sample winning card -->
+                    </div>
+                    
+                    <div class="scaled-pattern-info">
+                        <h3><i class="fas fa-star"></i> WINNING PATTERN</h3>
+                        <p>Row 1, Column B</p>
+                    </div>
+                    
+                    <div class="scaled-card-stats">
+                        <div class="scaled-stat">
+                            <div class="scaled-stat-value">2</div>
+                            <div class="scaled-stat-label">Winning Lines</div>
+                        </div>
+                        <div class="scaled-stat">
+                            <div class="scaled-stat-value">15</div>
+                            <div class="scaled-stat-label">Marked Numbers</div>
+                        </div>
+                        <div class="scaled-stat">
+                            <div class="scaled-stat-value">45s</div>
+                            <div class="scaled-stat-label">Game Time</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="play-again-minimal-btn" id="playAgainBtn">
+                    <i class="fas fa-redo"></i> PLAY AGAIN
+                </button>
+            </div>
+        `;
         
-        const prizePool = Math.floor(Math.random() * 10000) + 5000;
-        this.prizeAmount.textContent = `$${prizePool}`;
+        // Add event listeners to buttons
+        document.getElementById('backBtn').addEventListener('click', () => this.handlePlayAgain());
+        document.getElementById('playAgainBtn').addEventListener('click', () => this.handlePlayAgain());
+        
+        // Generate a sample grid
+        this.generateSampleGrid();
+    }
+
+    generateSampleGrid() {
+        const gridContainer = document.querySelector('.scaled-bingo-grid');
+        if (!gridContainer) return;
+        
+        // Create column headers
+        ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
+            const headerCell = document.createElement('div');
+            headerCell.className = 'scaled-grid-header';
+            headerCell.textContent = letter;
+            gridContainer.appendChild(headerCell);
+        });
+        
+        // Create sample numbers
+        const sampleNumbers = [
+            1, 16, 31, 46, 61,
+            2, 17, 32, 47, 62,
+            3, 18, 'FREE', 48, 63,
+            4, 19, 34, 49, 64,
+            5, 20, 35, 50, 65
+        ];
+        
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'scaled-grid-cell';
+            
+            if (i === 12) {
+                cell.textContent = 'FREE';
+                cell.className += ' scaled-free scaled-marked';
+            } else {
+                cell.textContent = sampleNumbers[i];
+                
+                // Mark some sample cells
+                if ([0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 14, 19].includes(i)) {
+                    cell.className += ' scaled-marked';
+                }
+                
+                // Highlight winning pattern (first row)
+                if ([0, 1, 2, 3, 4].includes(i)) {
+                    cell.className += ' scaled-winning';
+                }
+            }
+            
+            cell.setAttribute('data-col', i % 5);
+            gridContainer.appendChild(cell);
+        }
     }
 
     createConfetti() {
@@ -259,126 +339,15 @@ class WinnerPage {
     }
 
     setupEventListeners() {
-        this.playAgainBtn.addEventListener('click', () => {
-            this.handlePlayAgain();
-        });
-        
-        this.leaderboardBtn.addEventListener('click', () => {
-            this.handleLeaderboard();
-        });
-        
-        this.shareBtn.addEventListener('click', () => {
-            this.handleShare();
-        });
+        // Event listeners are added dynamically in displayWinningCard
     }
 
     handlePlayAgain() {
-        this.playAgainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> LOADING...';
-        this.playAgainBtn.disabled = true;
-        
+        // Clear session storage
         sessionStorage.clear();
         
-        setTimeout(() => {
-            BingoUtils.navigateTo('index.html');
-        }, 1500);
-    }
-
-    handleLeaderboard() {
-        const leaderboardData = this.getLeaderboardData();
-        this.showLeaderboard(leaderboardData);
-    }
-
-    getLeaderboardData() {
-        return [
-            { rank: 1, name: this.winnerData.playerName, score: this.winnerData.totalLines * 1000, time: this.winnerData.gameTime },
-            { rank: 2, name: 'Player2', score: 4500, time: 85 },
-            { rank: 3, name: 'Player3', score: 4000, time: 92 },
-            { rank: 4, name: 'Player4', score: 3500, time: 78 },
-            { rank: 5, name: 'Player5', score: 3000, time: 105 }
-        ];
-    }
-
-    showLeaderboard(data) {
-        const leaderboardHTML = `
-            <div class="leaderboard-modal">
-                <h3><i class="fas fa-crown"></i> TOP PLAYERS</h3>
-                <div class="leaderboard-list">
-                    ${data.map(player => `
-                        <div class="leaderboard-item ${player.name === this.winnerData.playerName ? 'current-player' : ''}">
-                            <div class="player-rank">#${player.rank}</div>
-                            <div class="player-name">${player.name}</div>
-                            <div class="player-score">${player.score} pts</div>
-                            <div class="player-time">${BingoUtils.formatTime(player.time)}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = leaderboardHTML;
-        
-        document.body.appendChild(modal);
-        
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                document.body.removeChild(modal);
-            }
-        });
-    }
-
-    handleShare() {
-        const shareMessage = `🎉 I just won BINGO in Telegram Casino!\n\n` +
-                           `🏆 Victory: ${this.winnerData.totalLines} winning lines\n` +
-                           `⏱️ Time: ${this.gameDuration.textContent}\n` +
-                           `🎯 Cards: ${this.winnerData.cardNumbers.join(', ')}\n` +
-                           `💰 Winnings: ${this.yourWinnings.textContent}\n\n` +
-                           `Play now and try your luck!`;
-        
-        if (this.telegramManager.shareMessage(shareMessage)) {
-            return;
-        }
-        
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(shareMessage).then(() => {
-                BingoUtils.showNotification('Victory message copied to clipboard! Share it with your friends.', 'success');
-            }).catch(() => {
-                this.showShareDialog(shareMessage);
-            });
-        } else {
-            this.showShareDialog(shareMessage);
-        }
-    }
-
-    showShareDialog(message) {
-        const shareDialog = document.createElement('div');
-        shareDialog.className = 'share-dialog';
-        shareDialog.innerHTML = `
-            <div class="share-content">
-                <h3><i class="fas fa-share-alt"></i> Share Your Victory</h3>
-                <textarea readonly>${message}</textarea>
-                <button class="btn btn-primary" id="copyMessageBtn">
-                    <i class="fas fa-copy"></i> Copy Message
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(shareDialog);
-        
-        document.getElementById('copyMessageBtn').addEventListener('click', () => {
-            const textarea = shareDialog.querySelector('textarea');
-            textarea.select();
-            document.execCommand('copy');
-            BingoUtils.showNotification('Message copied!', 'success');
-            document.body.removeChild(shareDialog);
-        });
-        
-        shareDialog.addEventListener('click', (e) => {
-            if (e.target === shareDialog) {
-                document.body.removeChild(shareDialog);
-            }
-        });
+        // Navigate back to index (main menu) - NOT card selection
+        window.location.href = 'index.html';
     }
 }
 
