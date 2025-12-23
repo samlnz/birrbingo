@@ -30,7 +30,6 @@ class ChooseCardsPage {
         this.maxCards = 2;
         this.selectionTime = 60;
         this.timerInterval = null;
-        this.autoConfirmTimer = null;
         
         this.init();
     }
@@ -91,7 +90,6 @@ class ChooseCardsPage {
             const index = this.gameState.selectedCards.indexOf(cardNumber);
             this.gameState.selectedCards.splice(index, 1);
             this.updateCardElements();
-            this.cancelAutoConfirm();
             return;
         }
         
@@ -109,31 +107,8 @@ class ChooseCardsPage {
         this.updateSelectedCardsDisplay();
         this.updateDisplays();
         
-        // Check if we have selected maximum cards
-        if (this.gameState.selectedCards.length >= this.maxCards) {
-            // Auto-confirm after 1 second
-            this.startAutoConfirm();
-        }
-    }
-
-    cancelAutoConfirm() {
-        if (this.autoConfirmTimer) {
-            clearTimeout(this.autoConfirmTimer);
-            this.autoConfirmTimer = null;
-        }
-    }
-
-    startAutoConfirm() {
-        // Cancel any existing timer
-        this.cancelAutoConfirm();
-        
-        // Show notification
-        BingoUtils.showNotification(`Selected ${this.maxCards} cards! Starting game in 2 seconds...`, 'success');
-        
-        // Start auto-confirm timer
-        this.autoConfirmTimer = setTimeout(() => {
-            this.confirmSelection();
-        }, 2000);
+        // Show selection confirmation (but don't auto-start)
+        BingoUtils.showNotification(`Card #${cardNumber} selected! Game will start when timer reaches 0.`, 'success');
     }
 
     updateCardElements() {
@@ -241,24 +216,55 @@ class ChooseCardsPage {
             
             if (this.selectionTime <= 0) {
                 clearInterval(this.timerInterval);
-                if (this.gameState.selectedCards.length > 0) {
-                    this.confirmSelection();
-                } else {
-                    this.autoSelectCards();
-                }
+                this.handleTimerExpired();
             }
             
             // Add urgency effect when time is low
             if (this.selectionTime <= 10) {
                 this.selectionTimer.classList.add('animate-shake');
+                
+                // Show urgent notification at 10, 5, 3, 2, 1 seconds
+                if ([10, 5, 3, 2, 1].includes(this.selectionTime)) {
+                    BingoUtils.showNotification(`${this.selectionTime} second${this.selectionTime === 1 ? '' : 's'} left!`, 'warning');
+                }
             }
         }, 1000);
+    }
+
+    handleTimerExpired() {
+        // Stop the shake animation
+        this.selectionTimer.classList.remove('animate-shake');
+        
+        // Check if any cards are selected
+        if (this.gameState.selectedCards.length === 0) {
+            // No cards selected - auto select random cards
+            BingoUtils.showNotification('Time expired! Selecting random cards for you...', 'info');
+            this.randomSelectCards();
+            
+            // Wait 2 seconds then proceed
+            setTimeout(() => {
+                this.confirmSelection();
+            }, 2000);
+        } else {
+            // Cards are selected - proceed to game
+            BingoUtils.showNotification('Time expired! Starting game with your selected cards...', 'info');
+            this.confirmSelection();
+        }
     }
 
     updateTimerDisplay() {
         const minutes = Math.floor(this.selectionTime / 60);
         const seconds = this.selectionTime % 60;
         this.selectionTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Update timer color based on remaining time
+        if (this.selectionTime <= 10) {
+            this.selectionTimer.style.color = '#ff4b4b';
+        } else if (this.selectionTime <= 30) {
+            this.selectionTimer.style.color = '#ff9e00';
+        } else {
+            this.selectionTimer.style.color = '#00b4d8';
+        }
     }
 
     randomSelectCards() {
@@ -294,10 +300,9 @@ class ChooseCardsPage {
         this.updateSelectedCardsDisplay();
         this.updateDisplays();
         
-        // If we reached max cards, start auto-confirm
-        if (this.gameState.selectedCards.length >= this.maxCards) {
-            this.startAutoConfirm();
-        }
+        // Show notification for selected cards
+        const selectedCardsText = this.gameState.selectedCards.slice(-cardsToSelect).join(', ');
+        BingoUtils.showNotification(`Randomly selected cards: ${selectedCardsText}`, 'success');
     }
 
     clearSelection() {
@@ -305,22 +310,12 @@ class ChooseCardsPage {
         this.updateCardElements();
         this.updateSelectedCardsDisplay();
         this.updateDisplays();
-        this.cancelAutoConfirm();
-    }
-
-    autoSelectCards() {
-        if (this.gameState.selectedCards.length === 0) {
-            this.randomSelectCards();
-            setTimeout(() => this.confirmSelection(), 1000);
-        }
+        BingoUtils.showNotification('Selection cleared!', 'info');
     }
 
     confirmSelection() {
-        // Cancel auto-confirm timer if it exists
-        this.cancelAutoConfirm();
-        
         if (this.gameState.selectedCards.length === 0) {
-            // If no cards selected, select random cards
+            // If no cards selected even after timer, select random cards
             this.randomSelectCards();
             setTimeout(() => this.confirmSelection(), 1000);
             return;

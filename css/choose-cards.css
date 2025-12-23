@@ -391,9 +391,125 @@
         align-items: stretch;
     }
     
-    .selection-timer {
-        min-width: auto;
+/* Add or update these styles in choose-cards.css */
+
+.selection-timer {
+    background: rgba(255, 75, 75, 0.15);
+    padding: 20px 30px;
+    border-radius: 15px;
+    border: 2px solid #ff4b4b;
+    text-align: center;
+    min-width: 200px;
+    transition: all 0.3s ease;
+}
+
+.timer-label {
+    color: #ff9999;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.timer-display {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #00b4d8;
+    font-family: 'Courier New', monospace;
+    transition: color 0.3s ease;
+    text-shadow: 0 0 10px rgba(0, 180, 216, 0.5);
+}
+
+/* Timer urgency states */
+.selection-timer.urgent {
+    border-color: #ff0000;
+    background: rgba(255, 0, 0, 0.2);
+    animation: pulseUrgent 1s infinite;
+}
+
+.timer-display.urgent {
+    color: #ff4b4b;
+    text-shadow: 0 0 10px rgba(255, 75, 75, 0.5);
+}
+
+@keyframes pulseUrgent {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
     }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    }
+}
+
+/* Remove the auto-start button styles and adjust layout */
+.controls-section {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    padding: 20px 40px;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    min-width: 250px;
+    justify-content: center;
+}
+
+/* Update instructions */
+.instructions ul li:nth-child(5) {
+    color: #ff4b4b;
+    font-weight: bold;
+}
+
+/* Selected cards counter */
+.cards-selected-counter {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 180, 216, 0.9);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(0, 180, 216, 0.3);
+    z-index: 100;
+}
+
+@media (max-width: 768px) {
+    .controls-section {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .control-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .cards-selected-counter {
+        bottom: 10px;
+        right: 10px;
+        padding: 10px 15px;
+        font-size: 1rem;
+    }
+}    
     
     .cards-grid {
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
