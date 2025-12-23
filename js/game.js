@@ -1,6 +1,3 @@
-
-
-
 // Game page functionality
 
 class GamePage {
@@ -414,59 +411,7 @@ class GamePage {
         this.createCalledNumbersGrid();
         this.updateDisplays();
     }
-[file name]: game.js
-// Add these methods at the end of the GamePage class, before the closing brace
 
-    // NEW: Stop game and redirect to winner page
-    stopGameAndRedirect() {
-        // Clear all intervals to stop the game
-        clearInterval(this.callIntervalId);
-        clearInterval(this.gameTimerId);
-        clearInterval(this.nextCallTimerId);
-        
-        // Show auto-win notification
-        this.showAutoWinNotification();
-        
-        // Prepare winner data
-        const winnerData = {
-            playerName: this.gameState.playerName,
-            playerId: this.gameState.playerId,
-            cardNumbers: this.gameState.selectedCards,
-            winningLines: {
-                card1: this.gameState.winningLines.card1.length,
-                card2: this.gameState.winningLines.card2.length
-            },
-            totalLines: this.gameState.winningLines.card1.length + this.gameState.winningLines.card2.length,
-            gameTime: this.gameState.gameTime,
-            calledNumbers: this.gameState.calledNumbers.size
-        };
-        
-        // Store in sessionStorage for winner page
-        sessionStorage.setItem('bingoWinner', JSON.stringify(winnerData));
-        
-        // Send win data to backend
-        this.sendWinData(winnerData);
-        
-        // Auto-redirect to winner page after 3 seconds
-        setTimeout(() => {
-            BingoUtils.navigateTo('winner.html');
-        }, 3000);
-    }
-    
-    // NEW: Show auto-win notification
-    showAutoWinNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'auto-win-notification';
-        notification.innerHTML = `
-            <div><i class="fas fa-trophy"></i> BINGO! Winning Pattern Detected!</div>
-            <div class="redirect-countdown">Auto-redirecting to winner page in 3 seconds...</div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Play winning sound
-        BingoUtils.playAudio(this.bingoAudio, 0.8);
-    }
 createCalledNumbersGrid() {
     this.calledNumbersGrid.innerHTML = '';
     
