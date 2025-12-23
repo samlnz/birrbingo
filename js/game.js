@@ -29,8 +29,7 @@ class GamePage {
         this.autoMarkBtn = document.getElementById('autoMarkBtn');
         this.bingoBtn = document.getElementById('bingoBtn');
         this.audioToggle = document.getElementById('audioToggle');
-        this.audioSettingsBtn = document.getElementById('audioSettingsBtn');
-        this.claimBingoBtn = document.getElementById('claimBingoBtn');
+        // REMOVED: audioSettingsBtn reference
         
         // Audio elements
         this.numberCallAudio = document.getElementById('numberCallAudio');
@@ -725,9 +724,7 @@ class GamePage {
             this.gameState.saveToSession();
         });
         
-        this.audioSettingsBtn.addEventListener('click', () => {
-            BingoUtils.showNotification('Audio settings would open here.', 'info');
-        });
+        // REMOVED: audioSettingsBtn event listener
         
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {

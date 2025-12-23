@@ -184,14 +184,7 @@ class WinnerPage {
                 ` : ''}
             </div>
             
-            <div class="action-buttons">
-                <button class="action-btn btn-play-again" id="playAgainBtn">
-                    <i class="fas fa-redo"></i> PLAY AGAIN
-                </button>
-                <button class="action-btn btn-share" id="shareBtn">
-                    <i class="fas fa-share-alt"></i> SHARE VICTORY
-                </button>
-            </div>
+            <!-- REMOVED: Action buttons section -->
             
             <div class="countdown-message" id="countdownMessage">
                 <i class="fas fa-hourglass-half"></i> 
@@ -205,7 +198,7 @@ class WinnerPage {
         // Generate the bingo grid
         this.generateBingoGrid(winnerData.cardData.card1);
         
-        // Setup event listeners
+        // Setup event listeners (only for auto-redirect now)
         this.setupEventListeners();
         
         console.log('Winner card displayed successfully');
@@ -267,22 +260,8 @@ class WinnerPage {
     }
 
     setupEventListeners() {
-        // Play Again button
-        const playAgainBtn = document.getElementById('playAgainBtn');
-        if (playAgainBtn) {
-            playAgainBtn.addEventListener('click', () => {
-                console.log('Play again clicked, redirecting to choose-cards.html');
-                this.redirectToCardSelection();
-            });
-        }
-        
-        // Share button
-        const shareBtn = document.getElementById('shareBtn');
-        if (shareBtn) {
-            shareBtn.addEventListener('click', () => {
-                this.shareVictory();
-            });
-        }
+        // REMOVED: Play Again and Share Victory button event listeners
+        // Only auto-redirect functionality remains
     }
 
     startAutoRedirect() {
@@ -314,33 +293,7 @@ class WinnerPage {
         window.location.href = 'choose-cards.html';
     }
 
-    shareVictory() {
-        const shareText = `🎉 I just won BINGO! 🏆\n\nPlay now and try your luck!`;
-        
-        // Try Web Share API first
-        if (navigator.share) {
-            navigator.share({
-                title: 'BINGO Victory!',
-                text: shareText,
-                url: window.location.href
-            }).catch(err => {
-                console.log('Share failed:', err);
-                this.copyToClipboard(shareText);
-            });
-        } else {
-            // Fallback to clipboard
-            this.copyToClipboard(shareText);
-        }
-    }
-
-    copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Victory message copied to clipboard! Share it with your friends.');
-        }).catch(err => {
-            console.error('Failed to copy:', err);
-            alert('Please copy this message manually:\n\n' + text);
-        });
-    }
+    // REMOVED: shareVictory() method
 }
 
 // Start the winner page when DOM is loaded
