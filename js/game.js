@@ -1,3 +1,5 @@
+
+
 // Game page functionality
 
 class GamePage {
