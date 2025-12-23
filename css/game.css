@@ -197,14 +197,15 @@
 .called-numbers-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
+    gap: 2px; /* MINIMIZED: Changed from 8px to 2px */
     height: auto;
     max-height: none;
     overflow-y: visible;
-    padding: 15px;
+    padding: 5px; /* REDUCED: Changed from 15px to 5px */
     background: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     flex-grow: 1;
+    border: none; /* REMOVED: White border line */
 }
 
 .called-number {
@@ -213,13 +214,15 @@
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #005f73, #003845);
-    border-radius: 10px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: white;
+    border-radius: 5px; /* REDUCED: Changed from 10px to 5px */
+    font-size: 2.7rem; /* INCREASED 3x: Changed from 0.9rem to 2.7rem */
+    font-weight: normal;
+    color: white; /* CHANGED: White text for all numbers */
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
+    padding: 0; /* REMOVED: Remove padding to maximize space */
+    min-height: 50px; /* Ensure minimum height */
 }
 
 .called-number:before {
@@ -365,9 +368,9 @@
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    font-size: 1.2rem;
+    font-size: 2.4rem; /* INCREASED: Changed from 1.2rem to 2.4rem */
     font-weight: bold;
-    color: #90e0ef;
+    color: #FFFFFF; /* REMOVED COLORS: White for all numbers */
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -461,8 +464,6 @@
     transform: translateY(-5px);
     box-shadow: 0 15px 35px rgba(33, 150, 243, 0.4);
 }
-
-/* REMOVED: .btn-audio styles */
 
 .audio-controls {
     position: fixed;
@@ -558,6 +559,135 @@
     100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
+/* ==================== */
+/* BINGO COLUMN LAYOUT  */
+/* ==================== */
+
+.called-numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px; /* MINIMIZED: Changed from 8px to 2px */
+    padding: 5px; /* REDUCED: Changed from 10px to 5px */
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    flex-grow: 1;
+    border: none; /* REMOVED: White border line */
+}
+
+.bingo-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    margin: 0 1px; /* MINIMIZED: Minimal margin between columns */
+}
+
+.column-header {
+    font-size: 4.5rem; /* INCREASED 3x: Changed from 1.5rem to 4.5rem */
+    font-weight: bold;
+    margin-bottom: 5px; /* REDUCED: Changed from 10px to 5px */
+    padding: 15px 0; /* ADJUSTED: Changed from 8px to 15px 0 */
+    width: 100%;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 2px solid;
+}
+
+.column-numbers {
+    display: grid;
+    grid-template-rows: repeat(15, 1fr);
+    gap: 2px; /* MINIMIZED: Changed from 4px to 2px */
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow-y: visible;
+    padding: 2px; /* MINIMIZED: Changed from 5px to 2px */
+    flex-grow: 1;
+}
+
+.called-number {
+    height: auto;
+    min-height: 60px; /* ADJUSTED: Changed from 80px to 60px for more compact */
+    padding: 2px; /* MINIMIZED: Changed from 4px 2px to 2px */
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px; /* REDUCED: Changed from 4px to 3px */
+    font-size: 2.7rem; /* INCREASED 3x: Changed from 0.9rem to 2.7rem */
+    font-weight: bold; /* RESTORED: Bold font for better readability */
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF; /* White text for all numbers */
+    border-left: none; /* REMOVED: Left border */
+}
+
+/* DECREASED CONTRAST: Softer highlighting colors */
+#column-B .called-number.called {
+    background: #FF6666 !important; /* Softer red for B column */
+    border-left: none !important;
+    box-shadow: 0 0 10px rgba(255, 102, 102, 0.7) !important; /* Softer shadow */
+}
+
+#column-I .called-number.called {
+    background: #66FF66 !important; /* Softer green for I column */
+    border-left: none !important;
+    box-shadow: 0 0 10px rgba(102, 255, 102, 0.7) !important; /* Softer shadow */
+}
+
+#column-N .called-number.called {
+    background: #6666FF !important; /* Softer blue for N column */
+    border-left: none !important;
+    box-shadow: 0 0 10px rgba(102, 102, 255, 0.7) !important; /* Softer shadow */
+}
+
+#column-G .called-number.called {
+    background: #FFFF66 !important; /* Softer yellow for G column */
+    border-left: none !important;
+    box-shadow: 0 0 10px rgba(255, 255, 102, 0.7) !important; /* Softer shadow */
+}
+
+#column-O .called-number.called {
+    background: #FF66FF !important; /* Softer magenta for O column */
+    border-left: none !important;
+    box-shadow: 0 0 10px rgba(255, 102, 255, 0.7) !important; /* Softer shadow */
+}
+
+.called-number.called {
+    transform: scale(1.05);
+    font-weight: bold;
+}
+
+/* Color coding for columns */
+#column-B .column-header { border-color: #FF0000; color: #FF0000; }
+#column-I .column-header { border-color: #00FF00; color: #00FF00; }
+#column-N .column-header { border-color: #0000FF; color: #0000FF; }
+#column-G .column-header { border-color: #FFFF00; color: #FFFF00; }
+#column-O .column-header { border-color: #FF00FF; color: #FF00FF; }
+
+/* REMOVED COLORS: All card numbers now white */
+.grid-cell[data-col="0"] { color: #FFFFFF !important; } /* White for all numbers */
+.grid-cell[data-col="1"] { color: #FFFFFF !important; } /* White for all numbers */
+.grid-cell[data-col="2"] { color: #FFFFFF !important; } /* White for all numbers */
+.grid-cell[data-col="3"] { color: #FFFFFF !important; } /* White for all numbers */
+.grid-cell[data-col="4"] { color: #FFFFFF !important; } /* White for all numbers */
+
+/* Free space unique color */
+.grid-cell.free {
+    background: linear-gradient(135deg, #FF69B4, #8B008B) !important;
+    color: white !important;
+    border-color: #FF1493 !important;
+}
+
+/* Winning corners style */
+.grid-cell.winning-corner {
+    background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+    color: #000 !important;
+    border: 3px solid #FFD700 !important;
+    animation: pulseWin 1s infinite !important;
+}
+
 @media (max-width: 768px) {
     .game-area {
         grid-template-columns: 1fr;
@@ -582,7 +712,7 @@
     }
     
     .grid-cell {
-        font-size: 1rem;
+        font-size: 1.6rem; /* ADJUSTED for mobile */
     }
 
     .called-numbers-grid {
@@ -594,8 +724,9 @@
     }
 
     .called-number {
-        height: 24px;
-        font-size: 0.8rem;
+        height: 30px; /* ADJUSTED for mobile */
+        font-size: 1.6rem; /* ADJUSTED for mobile */
+        min-height: 40px;
     }
     
     .called-numbers-grid {
@@ -613,140 +744,14 @@
         min-width: auto;
         padding: 15px;
     }
-}
-
-/* ==================== */
-/* BINGO COLUMN LAYOUT  */
-/* ==================== */
-
-.called-numbers-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    flex-grow: 1;
-}
-
-.bingo-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-}
-
-.column-header {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-    padding: 8px;
-    width: 100%;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    border: 2px solid;
-}
-
-.column-numbers {
-    display: grid;
-    grid-template-rows: repeat(15, 1fr);
-    gap: 4px;
-    width: 100%;
-    height: auto;
-    max-height: none;
-    overflow-y: visible;
-    padding: 5px;
-    flex-grow: 1;
-}
-
-.called-number {
-    height: 80px;
-    padding: 4px 2px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-weight: normal;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #FFFFFF;
-}
-
-/* Column-specific colors for called numbers highlight */
-#column-B .called-number.called {
-    background: #FF0000 !important;
-    border-left: 4px solid #FF0000 !important;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7) !important;
-}
-
-#column-I .called-number.called {
-    background: #00FF00 !important;
-    border-left: 4px solid #00FF00 !important;
-    box-shadow: 0 0 15px rgba(0, 255, 0, 0.7) !important;
-}
-
-#column-N .called-number.called {
-    background: #0000FF !important;
-    border-left: 4px solid #0000FF !important;
-    box-shadow: 0 0 15px rgba(0, 0, 255, 0.7) !important;
-}
-
-#column-G .called-number.called {
-    background: #FFFF00 !important;
-    border-left: 4px solid #FFFF00 !important;
-    box-shadow: 0 0 15px rgba(255, 255, 0, 0.7) !important;
-}
-
-#column-O .called-number.called {
-    background: #FF00FF !important;
-    border-left: 4px solid #FF00FF !important;
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.7) !important;
-}
-
-.called-number {
-    padding: 8px 5px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-    font-size: 1rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    border-left: 4px solid;
-}
-
-.called-number.called {
-    transform: scale(1.05);
-    font-weight: bold;
-}
-
-/* Color coding for columns */
-#column-B .column-header { border-color: #FF0000; color: #FF0000; }
-#column-I .column-header { border-color: #00FF00; color: #00FF00; }
-#column-N .column-header { border-color: #0000FF; color: #0000FF; }
-#column-G .column-header { border-color: #FFFF00; color: #FFFF00; }
-#column-O .column-header { border-color: #FF00FF; color: #FF00FF; }
-
-/* Bingo Card Color Coding */
-.grid-cell[data-col="0"] { color: #FF0000 !important; border-color: rgba(255, 0, 0, 0.3) !important; }
-.grid-cell[data-col="1"] { color: #00FF00 !important; border-color: rgba(0, 255, 0, 0.3) !important; }
-.grid-cell[data-col="2"] { color: #0000FF !important; border-color: rgba(0, 0, 255, 0.3) !important; }
-.grid-cell[data-col="3"] { color: #FFFF00 !important; border-color: rgba(255, 255, 0, 0.3) !important; }
-.grid-cell[data-col="4"] { color: #FF00FF !important; border-color: rgba(255, 0, 255, 0.3) !important; }
-
-/* Free space unique color */
-.grid-cell.free {
-    background: linear-gradient(135deg, #FF69B4, #8B008B) !important;
-    color: white !important;
-    border-color: #FF1493 !important;
-}
-
-/* Winning corners style */
-.grid-cell.winning-corner {
-    background: linear-gradient(135deg, #FFD700, #FFA500) !important;
-    color: #000 !important;
-    border: 3px solid #FFD700 !important;
-    animation: pulseWin 1s infinite !important;
+    
+    /* Mobile adjustments for Bingo columns */
+    .column-header {
+        font-size: 2.5rem; /* Smaller on mobile */
+    }
+    
+    .called-number {
+        font-size: 1.6rem; /* Smaller on mobile */
+        min-height: 40px;
+    }
 }
