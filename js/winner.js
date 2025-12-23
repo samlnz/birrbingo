@@ -2,25 +2,11 @@
 
 class WinnerPage {
     constructor() {
-        this.telegramManager = telegramManager;
-        
         // Winner data
-        this.winnerData = {
-            playerName: 'Telegram User',
-            playerId: '0000',
-            cardNumbers: [],
-            winningLines: { card1: 0, card2: 0 },
-            totalLines: 0,
-            gameTime: 0,
-            calledNumbers: 0,
-            winningPatternData: null,
-            cardData: null
-        };
+        this.winnerData = null;
         
         // DOM elements
         this.winnerContainer = document.querySelector('.winner-container');
-        this.winningCards = document.getElementById('winningCards');
-        this.playAgainBtn = document.getElementById('playAgainBtn');
         this.confettiContainer = document.getElementById('confettiContainer');
         this.winnerAudio = document.getElementById('winnerAudio');
         
@@ -28,30 +14,44 @@ class WinnerPage {
     }
 
     init() {
+        console.log('Winner page initializing...');
         this.loadWinnerData();
         this.createConfetti();
         this.setupAudio();
-        this.setupEventListeners();
         
-        // Show winning card after a short delay for effect
+        // Show winning card immediately
         setTimeout(() => {
             this.displayWinningCard();
-        }, 500);
+        }, 100);
     }
 
     loadWinnerData() {
+        console.log('Loading winner data from sessionStorage...');
         const savedWinner = sessionStorage.getItem('bingoWinner');
+        
         if (savedWinner) {
-            this.winnerData = JSON.parse(savedWinner);
-            console.log('Winner data loaded:', this.winnerData);
+            try {
+                this.winnerData = JSON.parse(savedWinner);
+                console.log('Winner data loaded successfully:', this.winnerData);
+                
+                // Validate data
+                if (!this.winnerData.cardNumbers || !this.winnerData.cardData) {
+                    console.warn('Winner data is incomplete, showing default card');
+                    this.showDefaultCard();
+                }
+            } catch (error) {
+                console.error('Error parsing winner data:', error);
+                this.showDefaultCard();
+            }
         } else {
             console.warn('No winner data found in sessionStorage');
-            // Show default card for testing
             this.showDefaultCard();
         }
     }
 
     displayWinningCard() {
+        console.log('Displaying winning card...');
+        
         // Clear the entire winner container
         this.winnerContainer.innerHTML = '';
         
@@ -59,21 +59,17 @@ class WinnerPage {
         const cardContainer = document.createElement('div');
         cardContainer.className = 'minimal-card-container';
         
-        // Add back button at the top
-        const backButton = document.createElement('button');
-        backButton.className = 'back-to-game-btn';
-        backButton.innerHTML = '<i class="fas fa-arrow-left"></i> BACK TO GAME';
-        backButton.addEventListener('click', () => {
-            this.handlePlayAgain();
-        });
+        // Title
+        const title = document.createElement('h1');
+        title.className = 'winner-title';
+        title.innerHTML = '<i class="fas fa-trophy"></i> BINGO WINNER!';
+        cardContainer.appendChild(title);
         
-        cardContainer.appendChild(backButton);
-        
-        // Display only cards that have winning lines
-        const hasCard1Win = this.winnerData.winningLines.card1 > 0;
-        const hasCard2Win = this.winnerData.winningLines.card2 > 0;
-        
-        if ((hasCard1Win || hasCard2Win) && this.winnerData.cardData) {
+        // Display winning card if we have data
+        if (this.winnerData && this.winnerData.cardData) {
+            const hasCard1Win = this.winnerData.winningLines.card1 > 0;
+            const hasCard2Win = this.winnerData.winningLines.card2 > 0;
+            
             if (hasCard1Win && this.winnerData.cardData.card1) {
                 this.createScaledWinningCard(1, this.winnerData.cardData.card1, cardContainer);
             }
@@ -81,20 +77,35 @@ class WinnerPage {
             if (hasCard2Win && this.winnerData.cardData.card2) {
                 this.createScaledWinningCard(2, this.winnerData.cardData.card2, cardContainer);
             }
+            
+            if (!hasCard1Win && !hasCard2Win) {
+                this.createSampleCard(cardContainer);
+            }
         } else {
-            this.showDefaultCard();
+            this.createSampleCard(cardContainer);
         }
         
-        // Add play again button at bottom
+        // Add auto-redirect message
+        const redirectMessage = document.createElement('div');
+        redirectMessage.className = 'redirect-message';
+        redirectMessage.innerHTML = `
+            <p><i class="fas fa-hourglass-half"></i> Redirecting to card selection in <span id="countdown">5</span> seconds...</p>
+        `;
+        cardContainer.appendChild(redirectMessage);
+        
+        // Add play again button
         const playAgainBtn = document.createElement('button');
         playAgainBtn.className = 'play-again-minimal-btn';
-        playAgainBtn.innerHTML = '<i class="fas fa-redo"></i> PLAY AGAIN';
+        playAgainBtn.innerHTML = '<i class="fas fa-redo"></i> PLAY AGAIN NOW';
         playAgainBtn.addEventListener('click', () => {
             this.handlePlayAgain();
         });
-        
         cardContainer.appendChild(playAgainBtn);
+        
         this.winnerContainer.appendChild(cardContainer);
+        
+        // Start countdown for auto-redirect
+        this.startCountdown();
     }
 
     createScaledWinningCard(cardIndex, cardData, container) {
@@ -109,10 +120,16 @@ class WinnerPage {
         const headerDiv = document.createElement('div');
         headerDiv.className = 'scaled-card-header';
         headerDiv.innerHTML = `
-            <h2><i class="fas fa-trophy"></i> WINNING CARD #${cardNumber}</h2>
-            <div class="player-info-mini">
-                <div class="mini-avatar">${this.winnerData.playerName.charAt(0).toUpperCase()}</div>
-                <div class="mini-player-name">${this.winnerData.playerName}</div>
+            <div class="winner-player-info">
+                <div class="winner-avatar-large">${this.winnerData.playerName.charAt(0).toUpperCase()}</div>
+                <div class="winner-details">
+                    <h2>${this.winnerData.playerName}</h2>
+                    <p>Card #${cardNumber}</p>
+                </div>
+            </div>
+            <div class="winning-stats">
+                <span class="winning-badge"><i class="fas fa-star"></i> ${winningLines.length} Winning Lines</span>
+                <span class="time-badge"><i class="fas fa-clock"></i> ${this.winnerData.gameTime}s</span>
             </div>
         `;
         cardElement.appendChild(headerDiv);
@@ -144,15 +161,17 @@ class WinnerPage {
                 cell.textContent = 'FREE';
                 cell.className += ' scaled-free scaled-marked';
             } else {
-                // Get the number from cardData.numbers
-                // Note: cardData.numbers is in column-major order
+                // Get the number from cardData.numbers (column-major order)
                 const numberIndex = col * 5 + row;
                 const number = cardData.numbers ? cardData.numbers[numberIndex] : '??';
                 cell.textContent = number;
                 cell.setAttribute('data-number', number);
                 
                 // Check if this number is marked
-                if (cardData.markedNumbers && cardData.markedNumbers.includes(number)) {
+                const isMarked = cardData.markedNumbers && 
+                                cardData.markedNumbers.includes(number);
+                
+                if (isMarked) {
                     cell.className += ' scaled-marked';
                 }
                 
@@ -176,93 +195,42 @@ class WinnerPage {
             const patternInfo = document.createElement('div');
             patternInfo.className = 'scaled-pattern-info';
             patternInfo.innerHTML = `
-                <h3><i class="fas fa-star"></i> WINNING PATTERN</h3>
+                <h3><i class="fas fa-medal"></i> Winning Pattern Detected</h3>
                 <p>${winningLines.join(', ')}</p>
             `;
             cardElement.appendChild(patternInfo);
         }
         
-        // Card stats
-        const statsDiv = document.createElement('div');
-        statsDiv.className = 'scaled-card-stats';
-        statsDiv.innerHTML = `
-            <div class="scaled-stat">
-                <div class="scaled-stat-value">${winningLines.length}</div>
-                <div class="scaled-stat-label">Winning Lines</div>
-            </div>
-            <div class="scaled-stat">
-                <div class="scaled-stat-value">${cardData.markedNumbers ? cardData.markedNumbers.length + 1 : 'N/A'}</div>
-                <div class="scaled-stat-label">Marked Numbers</div>
-            </div>
-            <div class="scaled-stat">
-                <div class="scaled-stat-value">${this.winnerData.gameTime}s</div>
-                <div class="scaled-stat-label">Game Time</div>
-            </div>
-        `;
-        cardElement.appendChild(statsDiv);
-        
         container.appendChild(cardElement);
     }
 
-    showDefaultCard() {
-        // Show a default card for testing
-        this.winnerContainer.innerHTML = `
-            <div class="minimal-card-container">
-                <button class="back-to-game-btn" id="backBtn">
-                    <i class="fas fa-arrow-left"></i> BACK TO GAME
-                </button>
-                
-                <div class="scaled-winning-card">
-                    <div class="scaled-card-header">
-                        <h2><i class="fas fa-trophy"></i> BINGO WINNER!</h2>
-                        <div class="player-info-mini">
-                            <div class="mini-avatar">T</div>
-                            <div class="mini-player-name">Telegram User</div>
-                        </div>
-                    </div>
-                    
-                    <div class="scaled-bingo-grid">
-                        <!-- This is a sample winning card -->
-                    </div>
-                    
-                    <div class="scaled-pattern-info">
-                        <h3><i class="fas fa-star"></i> WINNING PATTERN</h3>
-                        <p>Row 1, Column B</p>
-                    </div>
-                    
-                    <div class="scaled-card-stats">
-                        <div class="scaled-stat">
-                            <div class="scaled-stat-value">2</div>
-                            <div class="scaled-stat-label">Winning Lines</div>
-                        </div>
-                        <div class="scaled-stat">
-                            <div class="scaled-stat-value">15</div>
-                            <div class="scaled-stat-label">Marked Numbers</div>
-                        </div>
-                        <div class="scaled-stat">
-                            <div class="scaled-stat-value">45s</div>
-                            <div class="scaled-stat-label">Game Time</div>
-                        </div>
-                    </div>
+    createSampleCard(container) {
+        console.log('Creating sample card for display');
+        
+        const cardElement = document.createElement('div');
+        cardElement.className = 'scaled-winning-card';
+        
+        // Card header
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'scaled-card-header';
+        headerDiv.innerHTML = `
+            <div class="winner-player-info">
+                <div class="winner-avatar-large">T</div>
+                <div class="winner-details">
+                    <h2>Telegram User</h2>
+                    <p>Card #123</p>
                 </div>
-                
-                <button class="play-again-minimal-btn" id="playAgainBtn">
-                    <i class="fas fa-redo"></i> PLAY AGAIN
-                </button>
+            </div>
+            <div class="winning-stats">
+                <span class="winning-badge"><i class="fas fa-star"></i> 2 Winning Lines</span>
+                <span class="time-badge"><i class="fas fa-clock"></i> 45s</span>
             </div>
         `;
+        cardElement.appendChild(headerDiv);
         
-        // Add event listeners to buttons
-        document.getElementById('backBtn').addEventListener('click', () => this.handlePlayAgain());
-        document.getElementById('playAgainBtn').addEventListener('click', () => this.handlePlayAgain());
-        
-        // Generate a sample grid
-        this.generateSampleGrid();
-    }
-
-    generateSampleGrid() {
-        const gridContainer = document.querySelector('.scaled-bingo-grid');
-        if (!gridContainer) return;
+        // Create sample grid
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'scaled-bingo-grid';
         
         // Create column headers
         ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
@@ -272,7 +240,7 @@ class WinnerPage {
             gridContainer.appendChild(headerCell);
         });
         
-        // Create sample numbers
+        // Sample bingo numbers
         const sampleNumbers = [
             1, 16, 31, 46, 61,
             2, 17, 32, 47, 62,
@@ -281,7 +249,11 @@ class WinnerPage {
             5, 20, 35, 50, 65
         ];
         
+        // Create the grid cells
         for (let i = 0; i < 25; i++) {
+            const row = Math.floor(i / 5);
+            const col = i % 5;
+            
             const cell = document.createElement('div');
             cell.className = 'scaled-grid-cell';
             
@@ -291,20 +263,33 @@ class WinnerPage {
             } else {
                 cell.textContent = sampleNumbers[i];
                 
-                // Mark some sample cells
-                if ([0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 14, 19].includes(i)) {
+                // Mark sample winning pattern (first row + diagonal)
+                if ([0, 1, 2, 3, 4, 6, 12, 18, 24].includes(i)) {
                     cell.className += ' scaled-marked';
                 }
                 
-                // Highlight winning pattern (first row)
+                // Highlight winning cells (first row)
                 if ([0, 1, 2, 3, 4].includes(i)) {
                     cell.className += ' scaled-winning';
                 }
             }
             
-            cell.setAttribute('data-col', i % 5);
+            cell.setAttribute('data-col', col);
             gridContainer.appendChild(cell);
         }
+        
+        cardElement.appendChild(gridContainer);
+        
+        // Winning pattern info
+        const patternInfo = document.createElement('div');
+        patternInfo.className = 'scaled-pattern-info';
+        patternInfo.innerHTML = `
+            <h3><i class="fas fa-medal"></i> Winning Pattern Detected</h3>
+            <p>Row 1, Diagonal (Top-Left to Bottom-Right)</p>
+        `;
+        cardElement.appendChild(patternInfo);
+        
+        container.appendChild(cardElement);
     }
 
     createConfetti() {
@@ -338,19 +323,41 @@ class WinnerPage {
         }
     }
 
-    setupEventListeners() {
-        // Event listeners are added dynamically in displayWinningCard
+    startCountdown() {
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
+        
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdownElement) {
+                countdownElement.textContent = countdown;
+            }
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                this.handlePlayAgain();
+            }
+        }, 1000);
     }
 
     handlePlayAgain() {
+        console.log('Redirecting to card selection page...');
+        
         // Clear session storage
         sessionStorage.clear();
         
-        // Navigate back to index (main menu) - NOT card selection
-        window.location.href = 'index.html';
+        // Redirect to choose-cards.html (card selection page)
+        window.location.href = 'choose-cards.html';
+    }
+
+    showDefaultCard() {
+        console.log('Showing default card');
+        // We'll create the default card in displayWinningCard
     }
 }
 
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, creating WinnerPage instance');
     new WinnerPage();
 });

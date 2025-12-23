@@ -783,14 +783,23 @@ class GamePage {
             }
         };
         
-        sessionStorage.setItem('bingoWinner', JSON.stringify(winnerData));
+        console.log('Saving winner data to sessionStorage:', winnerData);
+        
+        // Save to sessionStorage
+        try {
+            sessionStorage.setItem('bingoWinner', JSON.stringify(winnerData));
+            console.log('Winner data saved successfully');
+        } catch (error) {
+            console.error('Error saving winner data:', error);
+        }
         
         this.sendWinData(winnerData);
         
-        // Redirect immediately to winner page
+        // Redirect immediately to winner page - FIXED
+        console.log('Redirecting to winner page...');
         setTimeout(() => {
             window.location.href = 'winner.html';
-        }, 100);
+        }, 500); // Short delay to ensure data is saved
     }
 
     sendWinData(winnerData) {
