@@ -755,3 +755,17 @@
     border: 3px solid #FFD700 !important;
     animation: pulseWin 1s infinite !important;
 }
+/* Persistent winning line styles */
+.grid-cell.winning-permanent {
+    background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+    color: #000 !important;
+    border: 3px solid #FFD700 !important;
+    animation: pulseWin 1s infinite !important;
+}
+
+/* Update the temporary winning class to be different */
+.grid-cell.winning {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32) !important;
+    color: white !important;
+    animation: pulseWin 0.6s ease;
+}

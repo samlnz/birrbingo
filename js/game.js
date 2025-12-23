@@ -196,6 +196,42 @@ class GamePage {
             cell.classList.add('marked');
             
             // Check for winning line
+            if (isComplete && allNumbersCalled && !this.gameState.winningLines[cardId].includes(`row${row}`)) {
+    winningLines.push(`row${row}`);
+    this.highlightWinningLine(cardId, 'row', row);
+    
+    // ADD THIS LINE for persistent highlight:
+    permanentlyHighlightLine(cardId, type, index) {
+    const cells = [];
+    
+    if (type === 'row') {
+        for (let col = 0; col < 5; col++) {
+            cells.push(document.querySelector(`[data-card="${cardId}"][data-row="${index}"][data-col="${col}"]`));
+        }
+    } else if (type === 'col') {
+        for (let row = 0; row < 5; row++) {
+            cells.push(document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${index}"]`));
+        }
+    } else if (type === 'diag') {
+        if (index === 1) {
+            for (let i = 0; i < 5; i++) {
+                cells.push(document.querySelector(`[data-card="${cardId}"][data-row="${i}"][data-col="${i}"]`));
+            }
+        } else {
+            for (let i = 0; i < 5; i++) {
+                cells.push(document.querySelector(`[data-card="${cardId}"][data-row="${i}"][data-col="${4 - i}"]`));
+            }
+        }
+    }
+    
+    // Add a permanent winning line class
+    cells.forEach(cell => {
+        if (cell) {
+            cell.classList.add('winning-permanent');
+        }
+    });
+}
+}
             this.checkForWinningLine(cardId);
         }
         
@@ -381,9 +417,8 @@ class GamePage {
         }
         
         cells.forEach(cell => {
-            cell.classList.add('winning');
-            setTimeout(() => cell.classList.remove('winning'), 2000);
-        });
+    cell.classList.add('winning');
+});
     }
 
     showWinningLineIndicator(cardId, lines) {
