@@ -1,5 +1,6 @@
-[file name]: game.js
-[file content begin]
+
+
+
 // Game page functionality
 
 class GamePage {
@@ -48,7 +49,6 @@ class GamePage {
         this.gameTimerId = null;
         this.nextCallTimerId = null;
         this.callInterval = 5000;
-        this.hasWinner = false; // Track if we have a winner
         
         this.init();
     }
@@ -73,7 +73,7 @@ class GamePage {
         this.playerAvatar.textContent = this.gameState.playerName.charAt(0).toUpperCase();
     }
 
-    generateBingoCards() {
+        generateBingoCards() {
         this.playerCardsContainer.innerHTML = '';
         
         this.gameState.selectedCards.forEach((cardNumber, index) => {
@@ -86,7 +86,7 @@ class GamePage {
         });
     }
 
-    generateBingoCardNumbers(cardNumber) {
+       generateBingoCardNumbers(cardNumber) {
         // Use card number as seed for consistent cards
         const seed = cardNumber;
         const numbers = [];
@@ -217,7 +217,7 @@ class GamePage {
         this.updateBingoButton();
     }
 
-    checkForWinningLine(cardId) {
+        checkForWinningLine(cardId) {
         const winningLines = [];
         const allMarked = new Set(this.gameState.markedNumbers[cardId]);
         allMarked.add('FREE'); // Free space is always marked
@@ -312,8 +312,7 @@ class GamePage {
             winningLines.push('diag2');
             this.highlightWinningLine(cardId, 'diag', 2);
         }
-        
-        // Check four corners
+                // Check four corners
         let cornersComplete = true;
         let cornersAllCalled = true;
         const corners = [
@@ -346,7 +345,6 @@ class GamePage {
                 }
             });
         }
-        
         // Add new winning lines
         winningLines.forEach(line => {
             if (!this.gameState.winningLines[cardId].includes(line)) {
@@ -354,10 +352,9 @@ class GamePage {
             }
         });
         
-        // If we have a new winning line, show indicator and handle auto-win
+        // If we have a new winning line, show indicator
         if (winningLines.length > 0) {
             this.showWinningLineIndicator(cardId, winningLines);
-            this.handleAutoWin(); // NEW: Auto-win detection
         }
         
         this.updateCardStats(cardId);
@@ -401,14 +398,31 @@ class GamePage {
         BingoUtils.playAudio(this.bingoAudio, 0.8);
     }
 
-    // NEW: Auto-win handler
-    handleAutoWin() {
-        if (this.hasWinner) return;
+    updateBingoButton() {
+        const hasWinningLine = this.gameState.winningLines.card1.length > 0 || this.gameState.winningLines.card2.length > 0;
+        this.bingoBtn.disabled = !hasWinningLine;
         
-        this.hasWinner = true;
-        
-        // Stop all game timers
-        this.stopGameTimers();
+        if (hasWinningLine) {
+            const totalLines = this.gameState.winningLines.card1.length + this.gameState.winningLines.card2.length;
+            this.bingoBtn.innerHTML = `<i class="fas fa-trophy"></i> BINGO! (${totalLines} Line${totalLines > 1 ? 's' : ''})`;
+        } else {
+            this.bingoBtn.innerHTML = `<i class="fas fa-trophy"></i> BINGO! I HAVE A LINE!`;
+        }
+    }
+
+    initializeDisplays() {
+        this.createCalledNumbersGrid();
+        this.updateDisplays();
+    }
+[file name]: game.js
+// Add these methods at the end of the GamePage class, before the closing brace
+
+    // NEW: Stop game and redirect to winner page
+    stopGameAndRedirect() {
+        // Clear all intervals to stop the game
+        clearInterval(this.callIntervalId);
+        clearInterval(this.gameTimerId);
+        clearInterval(this.nextCallTimerId);
         
         // Show auto-win notification
         this.showAutoWinNotification();
@@ -438,29 +452,7 @@ class GamePage {
             BingoUtils.navigateTo('winner.html');
         }, 3000);
     }
-
-    // NEW: Stop game timers
-    stopGameTimers() {
-        if (this.callIntervalId) {
-            clearInterval(this.callIntervalId);
-            this.callIntervalId = null;
-        }
-        
-        if (this.gameTimerId) {
-            clearInterval(this.gameTimerId);
-            this.gameTimerId = null;
-        }
-        
-        if (this.nextCallTimerId) {
-            clearInterval(this.nextCallTimerId);
-            this.nextCallTimerId = null;
-        }
-        
-        // Disable the BINGO button
-        this.bingoBtn.disabled = true;
-        this.bingoBtn.innerHTML = '<i class="fas fa-trophy"></i> GAME ENDED - YOU WON!';
-    }
-
+    
     // NEW: Show auto-win notification
     showAutoWinNotification() {
         const notification = document.createElement('div');
@@ -475,94 +467,78 @@ class GamePage {
         // Play winning sound
         BingoUtils.playAudio(this.bingoAudio, 0.8);
     }
-
-    updateBingoButton() {
-        const hasWinningLine = this.gameState.winningLines.card1.length > 0 || this.gameState.winningLines.card2.length > 0;
-        this.bingoBtn.disabled = !hasWinningLine;
+createCalledNumbersGrid() {
+    this.calledNumbersGrid.innerHTML = '';
+    
+    // Column configuration - KEEP COLORS FOR LETTERS ONLY
+    const columns = [
+        { letter: 'B', min: 1, max: 15, color: '#FF0000' },
+        { letter: 'I', min: 16, max: 30, color: '#00FF00' },
+        { letter: 'N', min: 31, max: 45, color: '#0000FF' },
+        { letter: 'G', min: 46, max: 60, color: '#FFFF00' },
+        { letter: 'O', min: 61, max: 75, color: '#FF00FF' }
+    ];
+    
+    // Create each column
+    columns.forEach(col => {
+        const columnDiv = document.createElement('div');
+        columnDiv.className = 'bingo-column';
+        columnDiv.id = `column-${col.letter}`;
         
-        if (hasWinningLine) {
-            const totalLines = this.gameState.winningLines.card1.length + this.gameState.winningLines.card2.length;
-            this.bingoBtn.innerHTML = `<i class="fas fa-trophy"></i> BINGO! (${totalLines} Line${totalLines > 1 ? 's' : ''})`;
-        } else {
-            this.bingoBtn.innerHTML = `<i class="fas fa-trophy"></i> BINGO! I HAVE A LINE!`;
+        // Column header (B, I, N, G, O) - KEEP COLORED
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'column-header';
+        headerDiv.textContent = col.letter;
+        headerDiv.style.color = col.color;
+        headerDiv.style.borderColor = col.color;
+        columnDiv.appendChild(headerDiv);
+        
+        // Numbers container
+        const numbersContainer = document.createElement('div');
+        numbersContainer.className = 'column-numbers';
+        numbersContainer.id = `numbers-${col.letter}`;
+        
+        // Add numbers for this column (1-15, 16-30, etc.) - NO COLOR
+        for (let i = col.min; i <= col.max; i++) {
+            const numberElement = document.createElement('div');
+            numberElement.className = 'called-number';
+            numberElement.textContent = i;
+            numberElement.dataset.number = i;
+            numberElement.dataset.column = col.letter;
+            // REMOVED: numberElement.style.color = col.color;
+            // REMOVED: numberElement.style.borderLeft = `4px solid ${col.color}`;
+            numbersContainer.appendChild(numberElement);
         }
-    }
-
-    initializeDisplays() {
-        this.createCalledNumbersGrid();
-        this.updateDisplays();
-    }
-
-    createCalledNumbersGrid() {
-        this.calledNumbersGrid.innerHTML = '';
         
-        // Column configuration - KEEP COLORS FOR LETTERS ONLY
-        const columns = [
-            { letter: 'B', min: 1, max: 15, color: '#FF0000' },
-            { letter: 'I', min: 16, max: 30, color: '#00FF00' },
-            { letter: 'N', min: 31, max: 45, color: '#0000FF' },
-            { letter: 'G', min: 46, max: 60, color: '#FFFF00' },
-            { letter: 'O', min: 61, max: 75, color: '#FF00FF' }
-        ];
-        
-        // Create each column
-        columns.forEach(col => {
-            const columnDiv = document.createElement('div');
-            columnDiv.className = 'bingo-column';
-            columnDiv.id = `column-${col.letter}`;
-            
-            // Column header (B, I, N, G, O) - KEEP COLORED
-            const headerDiv = document.createElement('div');
-            headerDiv.className = 'column-header';
-            headerDiv.textContent = col.letter;
-            headerDiv.style.color = col.color;
-            headerDiv.style.borderColor = col.color;
-            columnDiv.appendChild(headerDiv);
-            
-            // Numbers container
-            const numbersContainer = document.createElement('div');
-            numbersContainer.className = 'column-numbers';
-            numbersContainer.id = `numbers-${col.letter}`;
-            
-            // Add numbers for this column (1-15, 16-30, etc.) - NO COLOR
-            for (let i = col.min; i <= col.max; i++) {
-                const numberElement = document.createElement('div');
-                numberElement.className = 'called-number';
-                numberElement.textContent = i;
-                numberElement.dataset.number = i;
-                numberElement.dataset.column = col.letter;
-                numbersContainer.appendChild(numberElement);
-            }
-            
-            columnDiv.appendChild(numbersContainer);
-            this.calledNumbersGrid.appendChild(columnDiv);
-        });
-    }
-
-    updateCalledNumbersDisplay() {
-        // Update all called numbers
-        this.gameState.calledNumbers.forEach(number => {
-            // Find the element
-            const element = document.querySelector(`.called-number[data-number="${number}"]`);
-            if (element) {
-                element.classList.add('called');
-                // Use a neutral color for called numbers instead of column colors
-                element.style.backgroundColor = '#4CAF50'; // Green for called numbers
-                element.style.color = '#FFFFFF';
-                element.style.fontWeight = 'bold';
-                element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
-            }
-        });
-        
-        this.numbersCalled.textContent = this.gameState.calledNumbers.size;
-    }
-
+        columnDiv.appendChild(numbersContainer);
+        this.calledNumbersGrid.appendChild(columnDiv);
+    });
+}
+updateCalledNumbersDisplay() {
+    // REMOVED: const columnColors = {...}
+    
+    // Update all called numbers
+    this.gameState.calledNumbers.forEach(number => {
+        // Find the element
+        const element = document.querySelector(`.called-number[data-number="${number}"]`);
+        if (element) {
+            element.classList.add('called');
+            // Use a neutral color for called numbers instead of column colors
+            element.style.backgroundColor = '#4CAF50'; // Green for called numbers
+            element.style.color = '#FFFFFF';
+            element.style.fontWeight = 'bold';
+            element.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
+        }
+    });
+    
+    this.numbersCalled.textContent = this.gameState.calledNumbers.size;
+}
     updateDisplays() {
         this.activePlayers.textContent = this.gameState.activePlayers;
     }
 
     generateNextNumber() {
-        if (this.gameState.calledNumbers.size >= 75 || this.hasWinner) {
+        if (this.gameState.calledNumbers.size >= 75) {
             return null;
         }
         
@@ -575,8 +551,6 @@ class GamePage {
     }
 
     callNextNumber() {
-        if (this.hasWinner) return;
-        
         const number = this.generateNextNumber();
         if (!number) {
             this.endGame();
@@ -606,51 +580,50 @@ class GamePage {
         this.gameState.saveToSession();
     }
 
-    updateNumberDisplay(number) {
-        // Determine BINGO letter
-        let letter = '';
-        for (const [l, range] of Object.entries(this.BINGO_RANGES)) {
-            if (number >= range.min && number <= range.max) {
-                letter = l;
-                break;
-            }
+updateNumberDisplay(number) {
+    // Determine BINGO letter
+    let letter = '';
+    for (const [l, range] of Object.entries(this.BINGO_RANGES)) {
+        if (number >= range.min && number <= range.max) {
+            letter = l;
+            break;
+        }
+    }
+    
+    // Get color based on letter
+    const letterColors = {
+        'B': '#FF0000',    // Red for B
+        'I': '#00FF00',    // Green for I  
+        'N': '#0000FF',    // Blue for N
+        'G': '#FFFF00',    // Yellow for G
+        'O': '#FF00FF'     // Magenta for O
+    };
+    
+    // Animate the number display
+    this.currentNumber.style.transform = 'scale(0.5)';
+    this.currentNumber.style.opacity = '0';
+    
+    setTimeout(() => {
+        this.currentNumber.textContent = number.toString().padStart(2, '0');
+        this.numberLetter.textContent = letter;
+        this.currentNumberDisplay.textContent = `${letter}-${number}`;
+        
+        // Set color based on column
+        if (letterColors[letter]) {
+            this.currentNumber.style.color = letterColors[letter];
+            this.numberLetter.style.color = letterColors[letter];
         }
         
-        // Get color based on letter
-        const letterColors = {
-            'B': '#FF0000',    // Red for B
-            'I': '#00FF00',    // Green for I  
-            'N': '#0000FF',    // Blue for N
-            'G': '#FFFF00',    // Yellow for G
-            'O': '#FF00FF'     // Magenta for O
-        };
-        
-        // Animate the number display
-        this.currentNumber.style.transform = 'scale(0.5)';
-        this.currentNumber.style.opacity = '0';
+        this.currentNumber.style.transform = 'scale(1)';
+        this.currentNumber.style.opacity = '1';
+        this.currentNumber.classList.add('animate-number-pop');
         
         setTimeout(() => {
-            this.currentNumber.textContent = number.toString().padStart(2, '0');
-            this.numberLetter.textContent = letter;
-            this.currentNumberDisplay.textContent = `${letter}-${number}`;
-            
-            // Set color based on column
-            if (letterColors[letter]) {
-                this.currentNumber.style.color = letterColors[letter];
-                this.numberLetter.style.color = letterColors[letter];
-            }
-            
-            this.currentNumber.style.transform = 'scale(1)';
-            this.currentNumber.style.opacity = '1';
-            this.currentNumber.classList.add('animate-number-pop');
-            
-            setTimeout(() => {
-                this.currentNumber.classList.remove('animate-number-pop');
-            }, 500);
-        }, 300);
-    }
-
-    autoMarkNumbers(number) {
+            this.currentNumber.classList.remove('animate-number-pop');
+        }, 500);
+    }, 300);
+}
+        autoMarkNumbers(number) {
         // Only mark if number was actually called
         if (!this.gameState.calledNumbers.has(number)) return;
         
@@ -879,4 +852,3 @@ class GamePage {
 document.addEventListener('DOMContentLoaded', () => {
     new GamePage();
 });
-[file content end]
