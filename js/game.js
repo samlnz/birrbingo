@@ -4,24 +4,17 @@
 
 class GamePage {
     constructor() {
-    this.gameState = gameState;
-    this.telegramManager = telegramManager;
-    
-    // BINGO ranges
-    this.BINGO_RANGES = {
-        'B': { min: 1, max: 15 },
-        'I': { min: 16, max: 30 },
-        'N': { min: 31, max: 45 },
-        'G': { min: 46, max: 60 },
-        'O': { min: 61, max: 75 }
-    };
-    
-    // Add this new property here:
-    this.hasWinner = false;  // Add this line to track if winner declared
-    
-    // DOM elements
-    this.currentNumberDisplay = document.getElementById('currentNumberDisplay');
-    // ... rest continues
+        this.gameState = gameState;
+        this.telegramManager = telegramManager;
+        
+        // BINGO ranges
+        this.BINGO_RANGES = {
+            'B': { min: 1, max: 15 },
+            'I': { min: 16, max: 30 },
+            'N': { min: 31, max: 45 },
+            'G': { min: 46, max: 60 },
+            'O': { min: 61, max: 75 }
+        };
         
         // DOM elements
         this.currentNumberDisplay = document.getElementById('currentNumberDisplay');
@@ -207,18 +200,6 @@ class GamePage {
             // Check for winning line
             this.checkForWinningLine(cardId);
         }
-            // Add this NEW METHOD after the closing brace of checkForWinningLine()
-    autoCheckForWinner() {
-        // Check both cards for winning patterns
-        const cards = ['card1', 'card2'];
-        
-        cards.forEach(cardId => {
-            if (this.gameState.winningLines[cardId].length > 0 && !this.hasWinner) {
-                // If we have winning lines and no winner yet
-                this.declareWinner();
-            }
-        });
-    }
         
         // Update card stats
         this.updateCardStats(cardId);
