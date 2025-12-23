@@ -1,4 +1,3 @@
-
 // Common utility functions for the Bingo game
 
 class GameState {

@@ -1,4 +1,3 @@
-
 // Winner page functionality
 
 class WinnerPage {
