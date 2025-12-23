@@ -29,7 +29,6 @@ class GamePage {
         this.autoMarkBtn = document.getElementById('autoMarkBtn');
         this.bingoBtn = document.getElementById('bingoBtn');
         this.audioToggle = document.getElementById('audioToggle');
-        // REMOVED: audioSettingsBtn reference
         
         // Audio elements
         this.numberCallAudio = document.getElementById('numberCallAudio');
@@ -78,40 +77,23 @@ class GamePage {
     generateBingoCards() {
         this.playerCardsContainer.innerHTML = '';
         
+        // Generate cards based on selection
         this.gameState.selectedCards.forEach((cardNumber, index) => {
             const cardId = `card${index + 1}`;
-            const bingoNumbers = this.generateBingoCardNumbers(cardNumber);
+            let bingoNumbers;
+            
+            // First card: deterministic, Second card: randomized
+            if (cardId === 'card1') {
+                bingoNumbers = BingoUtils.generateDeterministicBingoCardNumbers(cardNumber);
+            } else {
+                bingoNumbers = BingoUtils.generateRandomBingoCardNumbers(cardNumber);
+            }
+            
             this.bingoNumbers[cardId] = bingoNumbers;
             
             const cardElement = this.createBingoCard(cardNumber, cardId, bingoNumbers);
             this.playerCardsContainer.appendChild(cardElement);
         });
-    }
-
-    generateBingoCardNumbers(cardNumber) {
-        const seed = cardNumber;
-        const numbers = [];
-        
-        const columnRanges = [
-            {min: 1, max: 15},
-            {min: 16, max: 30},
-            {min: 31, max: 45},
-            {min: 46, max: 60},
-            {min: 61, max: 75}
-        ];
-        
-        columnRanges.forEach((range, colIndex) => {
-            const colNumbers = [];
-            for (let row = 0; row < 5; row++) {
-                const hash = cardNumber * 100 + colIndex * 10 + row;
-                const num = (hash % (range.max - range.min + 1)) + range.min;
-                colNumbers.push(num);
-            }
-            colNumbers.sort((a, b) => a - b);
-            numbers.push(...colNumbers);
-        });
-        
-        return numbers;
     }
 
     createBingoCard(cardNumber, cardId, bingoNumbers) {
@@ -124,6 +106,7 @@ class GamePage {
                 <h3 class="card-title">
                     <i class="fas fa-dice-${cardId === 'card1' ? 'one' : 'two'}"></i>
                     CARD #${cardNumber}
+                    <span class="card-type">${cardId === 'card1' ? '(Fixed)' : '(Random)'}</span>
                 </h3>
                 <div class="card-number">#${cardNumber}</div>
             </div>
@@ -723,8 +706,6 @@ class GamePage {
             
             this.gameState.saveToSession();
         });
-        
-        // REMOVED: audioSettingsBtn event listener
         
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
