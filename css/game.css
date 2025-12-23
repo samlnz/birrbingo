@@ -789,31 +789,3 @@
     animation: glow 1s infinite alternate;
     border: 3px solid #FFD700 !important;
 }
-[file name]: game.css
-/* Add ONLY this at the end of the file - nothing else changes */
-
-/* Auto-win notification */
-.auto-win-notification {
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: rgba(76, 175, 80, 0.95);
-    color: white;
-    padding: 20px 40px;
-    border-radius: 15px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    z-index: 1001;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(76, 175, 80, 0.5);
-    animation: slideInDown 0.5s ease, pulse 1s infinite;
-    border: 3px solid #FFD700;
-}
-
-.redirect-countdown {
-    font-size: 1rem;
-    margin-top: 10px;
-    opacity: 0.9;
-    font-family: 'Courier New', monospace;
-}
