@@ -173,6 +173,34 @@ class BingoUtils {
             window.location.href = url;
         }
     }
+        static autoRedirect(url, delay = 3000, message = "Redirecting...") {
+        const overlay = document.createElement('div');
+        overlay.className = 'auto-win-notification';
+        overlay.innerHTML = `
+            <div>${message}</div>
+            <div class="redirect-countdown">Auto-redirect in ${delay/1000} seconds...</div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        setTimeout(() => {
+            overlay.remove();
+            this.navigateTo(url);
+        }, delay);
+        
+        // Countdown animation
+        let count = delay/1000;
+        const countdownEl = overlay.querySelector('.redirect-countdown');
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownEl.textContent = `Auto-redirect in ${count} seconds...`;
+            }
+            if (count <= 0) {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+    }
 }
 
 // Initialize global game state

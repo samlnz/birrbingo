@@ -2,18 +2,25 @@
 // Game page functionality
 
 class GamePage {
-    constructor() {
-        this.gameState = gameState;
-        this.telegramManager = telegramManager;
-        
-        // BINGO ranges
-        this.BINGO_RANGES = {
-            'B': { min: 1, max: 15 },
-            'I': { min: 16, max: 30 },
-            'N': { min: 31, max: 45 },
-            'G': { min: 46, max: 60 },
-            'O': { min: 61, max: 75 }
-        };
+constructor() {
+    this.gameState = gameState;
+    this.telegramManager = telegramManager;
+    
+    // BINGO ranges
+    this.BINGO_RANGES = {
+        'B': { min: 1, max: 15 },
+        'I': { min: 16, max: 30 },
+        'N': { min: 31, max: 45 },
+        'G': { min: 46, max: 60 },
+        'O': { min: 61, max: 75 }
+    };
+    
+    // Add this new property here:
+    this.hasWinner = false;  // Add this line to track if winner declared
+    
+    // DOM elements
+    this.currentNumberDisplay = document.getElementById('currentNumberDisplay');
+    // ... rest continues
         
         // DOM elements
         this.currentNumberDisplay = document.getElementById('currentNumberDisplay');
@@ -199,6 +206,40 @@ class GamePage {
             // Check for winning line
             this.checkForWinningLine(cardId);
         }
+            // Add this NEW METHOD after the closing brace of checkForWinningLine()
+    autoCheckForWinner() {
+        // Check both cards for winning patterns
+        const cards = ['card1', 'card2'];
+        
+        cards.forEach(cardId => {
+            if (this.gameState.winningLines[cardId].length > 0 && !this.hasWinner) {
+                // If we have winning lines and no winner yet
+                this.declareWinner();
+            }
+        });
+    }
+        // Add this NEW METHOD after autoCheckForWinner()
+    declareWinner() {
+        // Set winner flag
+        this.hasWinner = true;
+        
+        // Stop all timers
+        clearInterval(this.callIntervalId);
+        clearInterval(this.gameTimerId);
+        clearInterval(this.nextCallTimerId);
+        
+        // Play winning sound
+        BingoUtils.playAudio(this.bingoAudio, 1.0);
+        
+        // Show winning message
+        this.winningLineText.textContent = `${this.gameState.playerName} WINS!`;
+        this.winningLineIndicator.classList.add('active');
+        
+        // Wait 2 seconds then redirect to winner page
+        setTimeout(() => {
+            this.claimBingo();
+        }, 2000);
+    }
         
         // Update card stats
         this.updateCardStats(cardId);
@@ -343,7 +384,7 @@ class GamePage {
                 }
             });
         }
-        // Add new winning lines
+                // Add new winning lines
         winningLines.forEach(line => {
             if (!this.gameState.winningLines[cardId].includes(line)) {
                 this.gameState.winningLines[cardId].push(line);
@@ -353,6 +394,11 @@ class GamePage {
         // If we have a new winning line, show indicator
         if (winningLines.length > 0) {
             this.showWinningLineIndicator(cardId, winningLines);
+            
+            // AUTO-WIN: Check if we should declare winner immediately
+            setTimeout(() => {
+                this.autoCheckForWinner();
+            }, 1000);
         }
         
         this.updateCardStats(cardId);
@@ -510,13 +556,18 @@ updateCalledNumbersDisplay() {
         this.updateNumberDisplay(number);
         this.updateCalledNumbersDisplay();
         
-        // Auto-mark numbers on cards
+                // Auto-mark numbers on cards
         if (this.gameState.isAutoMark) {
             this.autoMarkNumbers(number);
         }
         
         // Play audio
         BingoUtils.playAudio(this.numberCallAudio, 0.7);
+        
+        // Check for winner after each number is called
+        setTimeout(() => {
+            this.autoCheckForWinner();
+        }, 500);
         
         // Reset next call timer
         this.nextCallTime = 5;
@@ -752,7 +803,16 @@ updateNumberDisplay(number) {
     }
 
     claimBingo() {
+        // Stop game if not already stopped
+        if (!this.hasWinner) {
+            this.hasWinner = true;
+            clearInterval(this.callIntervalId);
+            clearInterval(this.gameTimerId);
+            clearInterval(this.nextCallTimerId);
+        }
+        
         // Prepare winner data
+        // ... rest of the method continues as is        // Prepare winner data
         const winnerData = {
             playerName: this.gameState.playerName,
             playerId: this.gameState.playerId,
