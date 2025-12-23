@@ -1,5 +1,4 @@
-[file name]: winner.js
-[file content begin]
+
 // Winner page functionality
 
 class WinnerPage {
@@ -41,7 +40,7 @@ class WinnerPage {
         this.init();
     }
 
-    init() {
+        init() {
         this.loadWinnerData();
         this.displayWinnerInfo();
         this.displayWinningCards();
@@ -50,8 +49,10 @@ class WinnerPage {
         this.setupAudio();
         this.setupEventListeners();
         
-        // REMOVED: Auto redirect after 5 seconds
-        // We don't want auto-redirect anymore since user just won
+        // Auto redirect after 5 seconds
+        setTimeout(() => {
+            this.handlePlayAgain();
+        }, 5000);
     }
 
     loadWinnerData() {
@@ -60,6 +61,7 @@ class WinnerPage {
             this.winnerData = JSON.parse(savedWinner);
         }
         
+        // Also load game state for additional info
         const gameState = JSON.parse(sessionStorage.getItem('bingoGameState') || '{}');
         this.winnerData.playerName = this.winnerData.playerName || gameState.playerName || 'Telegram User';
         this.winnerData.playerId = this.winnerData.playerId || gameState.playerId || '0000';
@@ -70,6 +72,7 @@ class WinnerPage {
         this.winnerAvatar.textContent = this.winnerData.playerName.charAt(0).toUpperCase();
         this.winnerTelegram.textContent = `@${this.winnerData.playerName.replace(/\s+/g, '').toLowerCase()}`;
         
+        // Set statistics
         this.totalLines.textContent = this.winnerData.totalLines;
         
         const minutes = Math.floor(this.winnerData.gameTime / 60);
@@ -79,15 +82,17 @@ class WinnerPage {
         
         this.numbersCalled.textContent = this.winnerData.calledNumbers;
         
-        const stake = 10;
+                // Calculate winnings (10 BIRR per player, 20% profit for admin)
+        const stake = 10; // 10 BIRR per player
         const totalPlayers = this.winnerData.totalPlayers || 1;
         const totalPrizePool = stake * totalPlayers;
-        const adminFee = totalPrizePool * 0.20;
+        const adminFee = totalPrizePool * 0.20; // 20% profit
         const winnerPrize = totalPrizePool - adminFee;
         
         this.prizeAmount.textContent = `${totalPrizePool} BIRR`;
         this.yourWinnings.textContent = `${winnerPrize} BIRR`;
         
+        // Random rank between 1-10
         this.playerRank.textContent = `#${Math.floor(Math.random() * 10) + 1}`;
     }
 
@@ -134,10 +139,12 @@ class WinnerPage {
     }
 
     setupGameSummary() {
+        // Set game summary
         this.totalPlayers.textContent = Math.floor(Math.random() * 300) + 200;
         this.cardsInPlay.textContent = Math.floor(this.totalPlayers.textContent * 1.5);
         this.callSpeed.textContent = '5s';
         
+        // Set random prize pool
         const prizePool = Math.floor(Math.random() * 10000) + 5000;
         this.prizeAmount.textContent = `$${prizePool}`;
     }
@@ -167,6 +174,7 @@ class WinnerPage {
     }
 
     setupAudio() {
+        // Set volume
         if (this.winnerAudio) {
             this.winnerAudio.volume = 0.7;
             this.winnerAudio.play().catch(e => console.log('Audio play failed:', e));
@@ -191,19 +199,23 @@ class WinnerPage {
         this.playAgainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> LOADING...';
         this.playAgainBtn.disabled = true;
         
+        // Clear session storage
         sessionStorage.clear();
         
+        // Navigate back to main menu
         setTimeout(() => {
             BingoUtils.navigateTo('index.html');
         }, 1500);
     }
 
     handleLeaderboard() {
+        // In a real app, this would fetch and display leaderboard data
         const leaderboardData = this.getLeaderboardData();
         this.showLeaderboard(leaderboardData);
     }
 
     getLeaderboardData() {
+        // Simulate leaderboard data
         return [
             { rank: 1, name: this.winnerData.playerName, score: this.winnerData.totalLines * 1000, time: this.winnerData.gameTime },
             { rank: 2, name: 'Player2', score: 4500, time: 85 },
@@ -230,12 +242,14 @@ class WinnerPage {
             </div>
         `;
         
+        // Create modal
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.innerHTML = leaderboardHTML;
         
         document.body.appendChild(modal);
         
+        // Add close functionality
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 document.body.removeChild(modal);
@@ -244,6 +258,7 @@ class WinnerPage {
     }
 
     handleShare() {
+        // Prepare share message
         const shareMessage = `🎉 I just won BINGO in Telegram Casino!\n\n` +
                            `🏆 Victory: ${this.winnerData.totalLines} winning lines\n` +
                            `⏱️ Time: ${this.gameDuration.textContent}\n` +
@@ -251,10 +266,12 @@ class WinnerPage {
                            `💰 Winnings: ${this.yourWinnings.textContent}\n\n` +
                            `Play now and try your luck!`;
         
+        // Try to share via Telegram first
         if (this.telegramManager.shareMessage(shareMessage)) {
             return;
         }
         
+        // Fallback to clipboard
         if (navigator.clipboard) {
             navigator.clipboard.writeText(shareMessage).then(() => {
                 BingoUtils.showNotification('Victory message copied to clipboard! Share it with your friends.', 'success');
@@ -281,6 +298,7 @@ class WinnerPage {
         
         document.body.appendChild(shareDialog);
         
+        // Add copy functionality
         document.getElementById('copyMessageBtn').addEventListener('click', () => {
             const textarea = shareDialog.querySelector('textarea');
             textarea.select();
@@ -289,6 +307,7 @@ class WinnerPage {
             document.body.removeChild(shareDialog);
         });
         
+        // Close on click outside
         shareDialog.addEventListener('click', (e) => {
             if (e.target === shareDialog) {
                 document.body.removeChild(shareDialog);
@@ -301,4 +320,3 @@ class WinnerPage {
 document.addEventListener('DOMContentLoaded', () => {
     new WinnerPage();
 });
-[file content end]
