@@ -207,6 +207,18 @@ class GamePage {
             // Check for winning line
             this.checkForWinningLine(cardId);
         }
+            // Add this NEW METHOD after the closing brace of checkForWinningLine()
+    autoCheckForWinner() {
+        // Check both cards for winning patterns
+        const cards = ['card1', 'card2'];
+        
+        cards.forEach(cardId => {
+            if (this.gameState.winningLines[cardId].length > 0 && !this.hasWinner) {
+                // If we have winning lines and no winner yet
+                this.declareWinner();
+            }
+        });
+    }
         
         // Update card stats
         this.updateCardStats(cardId);
