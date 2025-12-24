@@ -1,104 +1,179 @@
-# Bingo Game Bot
+# Bingo Ethiopia - Client
 
-A Telegram-based Bingo game bot that enables multiplayer Bingo gameplay through an interactive mini-app interface.
+Frontend application for Bingo Ethiopia, built with React, TypeScript, and Vite.
 
-## Features
+## 🚀 Quick Start
 
-- Supports multiplayer Bingo with flexible player count
-- Real-time number calling with consistent board generation
-- Dynamic board marking with free center space
-- Responsive web-based game interface integrated with Telegram
-- PostgreSQL database for robust game state management
-- Webhook support for external automation systems
-- Telegram bot backend providing seamless game coordination
-
-## Tech Stack
-
-- Python 3.11
-- Flask (Web Framework)
-- aiogram (Telegram Bot Framework)
-- PostgreSQL (Database)
-- SQLAlchemy (ORM)
-- Bootstrap (Frontend)
-
-## Dependencies
-
-```
-aiogram>=3.18.0
-email-validator>=2.2.0
-flask-login>=0.6.3
-flask>=3.1.0
-flask-sqlalchemy>=3.1.1
-gunicorn>=23.0.0
-psycopg2-binary>=2.9.10
-python-dotenv>=1.0.1
-sqlalchemy>=2.0.38
-twilio>=9.4.6
-flask-wtf>=1.2.2
-aiohttp>=3.11.13
-requests>=2.32.3
-```
-
-## Setup Instructions
-
-1. Clone the repository
+### Development
 ```bash
-git clone https://github.com/addis012/telegrambingo.git
-cd telegrambingo
+npm install
+npm run dev
 ```
 
-2. Create and activate a virtual environment
+Visit http://localhost:5173
+
+### Build for Production
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+npm run build
 ```
 
-3. Install dependencies
+Output will be in the `dist/` directory.
+
+### Preview Production Build
 ```bash
-pip install -r requirements.txt
+npm run preview
 ```
 
-4. Set up environment variables in `.env`:
+## 📦 Tech Stack
+
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **TailwindCSS** - Utility-first CSS
+- **Framer Motion** - Animation library
+- **Socket.IO Client** - Real-time communication
+- **React Router** - Client-side routing
+- **Axios** - HTTP client
+- **React Hot Toast** - Toast notifications
+
+## 🎨 Project Structure
+
 ```
-TELEGRAM_BOT_TOKEN=your_bot_token
-DATABASE_URL=postgresql://user:password@host:port/dbname
-SESSION_SECRET=your_secret_key
+src/
+├── components/          # Reusable components
+│   ├── game/           # Game-specific components
+│   └── ui/             # Generic UI components
+├── pages/              # Route pages
+│   ├── Game.tsx        # Main game page
+│   ├── Lobby.tsx       # Game lobby
+│   ├── Wallet.tsx      # Wallet management
+│   ├── Settings.tsx    # User settings
+│   ├── History.tsx     # Game history
+│   └── ReferralPage.tsx # Referrals
+├── services/           # API and Socket services
+│   ├── api.ts          # HTTP API calls
+│   ├── socket.ts       # Socket.IO client
+│   └── audio.ts        # Audio management
+├── utils/              # Helper functions
+│   └── bingoLogic.ts   # Game logic
+├── context/            # React contexts
+├── layouts/            # Layout components
+├── App.tsx             # Main app component
+└── main.tsx            # Entry point
 ```
 
-5. Initialize the database
+## 🔊 Audio Files
+
+The `public/audio/` directory contains:
+- 75 MP3 files for number calls (1-75)
+- Special announcements (BINGO!, Game Starting)
+- Total: 377 audio files
+
+## 🌐 Environment Variables
+
+Create a `.env` file:
+
+```env
+# API endpoint
+VITE_API_URL=http://localhost:3000
+
+# For production:
+# VITE_API_URL=https://your-api-domain.com
+```
+
+## 🎮 Key Features
+
+### Game Components
+- **BingoCard** - Interactive bingo card with daubing
+- **NumberDisplay** - Current and recently called numbers
+- **GameControls** - Game actions and status
+- **WinnerAnnouncement** - Celebration screen
+
+### Services
+- **API Service** - RESTful API calls for auth, wallet, games
+- **Socket Service** - Real-time game events
+- **Audio Service** - Number calling and sound effects
+
+### Pages
+- **Lobby** - Browse and join games
+- **Game** - Live gameplay
+- **Wallet** - Deposits, withdrawals, balance
+- **Settings** - User preferences
+- **History** - Past games and stats
+
+## 🔧 Development
+
+### Available Scripts
+
+- `npm run dev` - Start dev server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### Code Style
+
+This project uses:
+- ESLint for code linting
+- TypeScript for type checking
+- Prettier (recommended)
+
+### TypeScript Configuration
+
+The project uses three TypeScript configs:
+- `tsconfig.json` - Base config
+- `tsconfig.app.json` - App-specific settings
+- `tsconfig.node.json` - Node/Vite config
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. Connect your GitHub repository to Vercel
+2. Set environment variables:
+   - `VITE_API_URL` - Your backend API URL
+3. Deploy!
+
+Vercel will automatically:
+- Install dependencies
+- Run `npm run build`
+- Deploy the `dist/` folder
+
+### Other Platforms
+
+Build the project and deploy the `dist/` folder to any static hosting:
+
 ```bash
-flask db upgrade
+npm run build
+# Upload dist/ to your hosting provider
 ```
 
-6. Run the application
-```bash
-python main.py
-```
+## 🐛 Troubleshooting
 
-## Project Structure
+### Build Fails
+- Clear `node_modules` and reinstall: `rm -rf node_modules && npm install`
+- Clear Vite cache: `rm -rf node_modules/.vite`
 
-```
-├── app.py              # Flask application
-├── bot.py              # Telegram bot implementation
-├── database.py         # Database configuration
-├── game_logic.py       # Bingo game logic
-├── models.py           # Database models
-├── static/            # Static files (CSS, JS)
-└── templates/         # HTML templates
-```
+### Dev Server Issues
+- Check if port 5173 is available
+- Try a different port: `npm run dev -- --port 3001`
 
-## Contributing
+### TypeScript Errors
+- Run type checking: `npx tsc --noEmit`
+- Check `tsconfig.*.json` configurations
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Socket Connection Issues
+- Verify `VITE_API_URL` is set correctly
+- Check if backend server is running
+- Check browser console for errors
 
-## License
+## 📚 Learn More
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- [React Documentation](https://react.dev)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Vite Guide](https://vitejs.dev/guide/)
+- [TailwindCSS Docs](https://tailwindcss.com/docs)
+- [Socket.IO Client Docs](https://socket.io/docs/v4/client-api/)
 
-## Webhook Configuration
+## 🤝 Contributing
 
-For webhook setup instructions (e.g., for Tasker integration), see `tasker_webhook_instructions.txt`.
+See the main [README](../README.md) for contribution guidelines.
