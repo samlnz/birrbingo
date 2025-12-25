@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["postgresql", "openssl"]
-
-[phases.install]
-commands = ["pip install -r requirements.txt"]
-
-[start]
-command = "python main.py"
