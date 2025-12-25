@@ -1,0 +1,10 @@
+Flask==3.1.0
+aiogram==3.18.0
+flask-sqlalchemy==3.1.1
+psycopg2-binary==2.9.10
+python-dotenv==1.0.1
+gunicorn==23.0.0
+requests==2.32.3
+aiohttp==3.11.13
+SQLAlchemy==2.0.38
+twilio==9.4.6
