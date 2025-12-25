@@ -1,4 +1,4 @@
-// Common utility functions for the Bingo game - UPDATED FOR FIXED CARDS
+// Common utility functions for the Bingo game
 
 class GameState {
     constructor() {
@@ -67,48 +67,6 @@ class BingoUtils {
         'G': { min: 46, max: 60 },
         'O': { min: 61, max: 75 }
     };
-
-    // UPDATED: Create a deterministic seeded random number generator
-    static seededRandom(seed) {
-        let value = seed;
-        return function() {
-            value = (value * 9301 + 49297) % 233280;
-            return value / 233280;
-        }
-    }
-
-    // UPDATED: Generate fixed, unique bingo card for each card number (1-500)
-    static generateFixedBingoCard(cardNumber) {
-        const numbers = [];
-        const random = this.seededRandom(cardNumber * 1000); // Different seed for each card
-        
-        // Generate numbers for each column (B, I, N, G, O)
-        for (let col = 0; col < 5; col++) {
-            const columnNumbers = [];
-            const range = Object.values(this.BINGO_RANGES)[col];
-            const allNumbers = Array.from(
-                { length: range.max - range.min + 1 },
-                (_, i) => range.min + i
-            );
-            
-            // Shuffle using Fisher-Yates with seeded random
-            for (let i = allNumbers.length - 1; i > 0; i--) {
-                const j = Math.floor(random() * (i + 1));
-                [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]];
-            }
-            
-            // Take first 5 numbers and sort them
-            columnNumbers.push(...allNumbers.slice(0, 5).sort((a, b) => a - b));
-            
-            // Add to numbers array in column-major order
-            for (let row = 0; row < 5; row++) {
-                const index = col * 5 + row;
-                numbers[index] = columnNumbers[row];
-            }
-        }
-        
-        return numbers;
-    }
 
     static getLetterForNumber(number) {
         for (const [letter, range] of Object.entries(this.BINGO_RANGES)) {
@@ -216,18 +174,70 @@ class BingoUtils {
         }
     }
 
-    // UPDATED: Store all 500 card patterns in memory for consistency
-    static cardCache = new Map();
-    
-    static getCardNumbers(cardNumber) {
-        // Check cache first
-        if (this.cardCache.has(cardNumber)) {
-            return this.cardCache.get(cardNumber);
-        }
+    // NEW: Deterministic card number generation for first card
+    static generateDeterministicBingoCardNumbers(cardNumber) {
+        const seed = cardNumber;
+        const numbers = [];
         
-        // Generate and cache
-        const numbers = this.generateFixedBingoCard(cardNumber);
-        this.cardCache.set(cardNumber, numbers);
+        const columnRanges = [
+            {min: 1, max: 15},
+            {min: 16, max: 30},
+            {min: 31, max: 45},
+            {min: 46, max: 60},
+            {min: 61, max: 75}
+        ];
+        
+        // For deterministic first card
+        columnRanges.forEach((range, colIndex) => {
+            const colNumbers = [];
+            for (let row = 0; row < 5; row++) {
+                // Use a deterministic algorithm based on card number
+                const hash = (seed * 1000) + (colIndex * 100) + (row * 10) + 1;
+                const num = (hash % (range.max - range.min + 1)) + range.min;
+                
+                // Ensure uniqueness within column
+                let uniqueNum = num;
+                let attempts = 0;
+                while (colNumbers.includes(uniqueNum) && attempts < 100) {
+                    uniqueNum = ((uniqueNum + 7) % (range.max - range.min + 1)) + range.min;
+                    attempts++;
+                }
+                colNumbers.push(uniqueNum);
+            }
+            colNumbers.sort((a, b) => a - b);
+            numbers.push(...colNumbers);
+        });
+        
+        return numbers;
+    }
+
+    // NEW: Randomized card number generation for second card
+    static generateRandomBingoCardNumbers(cardNumber) {
+        const numbers = [];
+        
+        const columnRanges = [
+            {min: 1, max: 15},
+            {min: 16, max: 30},
+            {min: 31, max: 45},
+            {min: 46, max: 60},
+            {min: 61, max: 75}
+        ];
+        
+        // For randomized second card
+        columnRanges.forEach((range) => {
+            const colNumbers = new Set();
+            
+            // Generate 5 unique random numbers for this column
+            while (colNumbers.size < 5) {
+                const num = this.generateRandomNumber(range.min, range.max);
+                colNumbers.add(num);
+            }
+            
+            // Convert to array and sort
+            const sortedNumbers = Array.from(colNumbers).sort((a, b) => a - b);
+            numbers.push(...sortedNumbers);
+        });
+        
         return numbers;
     }
 }
