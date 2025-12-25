@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Game</title>
+    <style>
+        body {
+            background: #4a148c;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .bingo-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .bingo-letters {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .bingo-letter {
+            width: 50px;
+            height: 50px;
+            background: #FF6B00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            border-radius: 50%;
+            font-size: 1.5em;
+        }
+        .bingo-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .bingo-cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .bingo-cell.marked {
+            background: #FF6B00;
+        }
+        .called-numbers {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .current-call {
+            font-size: 2em;
+            color: #FF6B00;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="bingo-header">
+            <h1>🎯 BINGO Game #<span id="game-id">1</span></h1>
+            <p>Entry: <span id="entry-price">10</span> Birr | Players: <span id="player-count">1</span></p>
+        </div>
+        
+        <div class="bingo-letters">
+            <div class="bingo-letter">B</div>
+            <div class="bingo-letter">I</div>
+            <div class="bingo-letter">N</div>
+            <div class="bingo-letter">G</div>
+            <div class="bingo-letter">O</div>
+        </div>
+        
+        <div class="bingo-board" id="board">
+            <!-- Board cells will be loaded here -->
+        </div>
+        
+        <div class="called-numbers">
+            <h3>Called Numbers</h3>
+            <div class="current-call" id="current-call">B-15</div>
+            <div id="called-list"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="callBingo()" style="
+                background: #FF6B00;
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                font-size: 1.5em;
+                border-radius: 25px;
+                cursor: pointer;
+            ">
+                🎯 BINGO!
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize board
+        const board = document.getElementById('board');
+        const numbers = [
+            1, 16, 31, 46, 61,
+            2, 17, 32, 47, 62,
+            3, 18, "FREE", 48, 63,
+            4, 19, 33, 49, 64,
+            5, 20, 34, 50, 65
+        ];
+        
+        numbers.forEach((num, index) => {
+            const cell = document.createElement('div');
+            cell.className = 'bingo-cell';
+            cell.textContent = num;
+            cell.dataset.number = num;
+            cell.onclick = () => markCell(cell);
+            
+            if (num === "FREE") {
+                cell.classList.add('marked');
+            }
+            
+            board.appendChild(cell);
+        });
+        
+        function markCell(cell) {
+            if (cell.textContent !== "FREE") {
+                cell.classList.toggle('marked');
+            }
+        }
+        
+        function callBingo() {
+            const marked = document.querySelectorAll('.bingo-cell.marked');
+            if (marked.length >= 5) {
+                alert("🎉 BINGO! You won! 🎉");
+            } else {
+                alert("Need at least 5 marked numbers!");
+            }
+        }
+        
+        // Simulate number calling
+        setInterval(() => {
+            const letters = ['B', 'I', 'N', 'G', 'O'];
+            const letter = letters[Math.floor(Math.random() * 5)];
+            const number = Math.floor(Math.random() * 15) + 1;
+            document.getElementById('current-call').textContent = `${letter}-${number}`;
+        }, 5000);
+    </script>
+</body>
+</html>
