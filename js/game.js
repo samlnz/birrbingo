@@ -1,4 +1,4 @@
-// Game page functionality - UPDATED WITH READY ANIMATION
+// Game page functionality
 
 class GamePage {
     constructor() {
@@ -42,14 +42,13 @@ class GamePage {
         this.gameTimerId = null;
         this.nextCallTimerId = null;
         this.callInterval = 5000;
-        this.isGameActive = false; // Start inactive
+        this.isGameActive = true;
         this.winDetected = false;
-        this.readyAnimationActive = true; // New: Track ready animation
         
         // Track winning pattern details
         this.winningPatternData = {
-            card1: { winningCells: [], winningLines: [], winningPatterns: [] },
-            card2: { winningCells: [], winningLines: [], winningPatterns: [] }
+            card1: { winningCells: [], winningLines: [] },
+            card2: { winningCells: [], winningLines: [] }
         };
         
         this.init();
@@ -60,7 +59,7 @@ class GamePage {
         this.setupUserInfo();
         this.generateBingoCards();
         this.initializeDisplays();
-        this.startReadyAnimation(); // NEW: Start with ready animation
+        this.startTimers();
         this.setupAudio();
         this.checkForExistingCalls();
         this.setupEventListeners();
@@ -81,9 +80,14 @@ class GamePage {
         // Generate cards based on selection
         this.gameState.selectedCards.forEach((cardNumber, index) => {
             const cardId = `card${index + 1}`;
+            let bingoNumbers;
             
-            // Get fixed card numbers
-            const bingoNumbers = BingoUtils.getCardNumbers(cardNumber);
+            // First card: deterministic, Second card: randomized
+            if (cardId === 'card1') {
+                bingoNumbers = BingoUtils.generateDeterministicBingoCardNumbers(cardNumber);
+            } else {
+                bingoNumbers = BingoUtils.generateRandomBingoCardNumbers(cardNumber);
+            }
             
             this.bingoNumbers[cardId] = bingoNumbers;
             
@@ -102,7 +106,7 @@ class GamePage {
                 <h3 class="card-title">
                     <i class="fas fa-dice-${cardId === 'card1' ? 'one' : 'two'}"></i>
                     CARD #${cardNumber}
-                    <span class="card-type">(Fixed Pattern)</span>
+                    <span class="card-type">${cardId === 'card1' ? '(Fixed)' : '(Random)'}</span>
                 </h3>
                 <div class="card-number">#${cardNumber}</div>
             </div>
@@ -153,7 +157,6 @@ class GamePage {
         const cells = cardElement.querySelectorAll('.grid-cell:not(.free)');
         cells.forEach(cell => {
             cell.addEventListener('click', () => {
-                if (!this.isGameActive) return;
                 const cardId = cell.dataset.card;
                 const number = parseInt(cell.dataset.number);
                 this.toggleNumberMark(cardId, number, cell);
@@ -182,7 +185,7 @@ class GamePage {
     }
 
     updateCardStats(cardId) {
-        const markedCount = this.gameState.markedNumbers[cardId].size + 1; // +1 for FREE space
+        const markedCount = this.gameState.markedNumbers[cardId].size + 1;
         const linesCount = this.gameState.winningLines[cardId].length;
         
         document.getElementById(`${cardId}-marked`).textContent = markedCount;
@@ -191,41 +194,37 @@ class GamePage {
         this.updateBingoButton();
     }
 
-    // UPDATED: More accurate winning line detection
     checkForWinningLine(cardId) {
         if (this.winDetected) return;
         
         const winningLines = [];
+        const winningCells = [];
         const allMarked = new Set(this.gameState.markedNumbers[cardId]);
         allMarked.add('FREE');
-        
-        // Store patterns for winner page
-        const patterns = [];
         
         // Check rows
         for (let row = 0; row < 5; row++) {
             let isComplete = true;
+            let allNumbersCalled = true;
             let rowCells = [];
-            let rowPattern = [];
             
             for (let col = 0; col < 5; col++) {
                 const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
                 const number = cell.dataset.number;
                 rowCells.push(cell);
-                rowPattern.push(cell.dataset.index);
                 
                 if (!allMarked.has(number === 'FREE' ? 'FREE' : parseInt(number))) {
                     isComplete = false;
                 }
+                
+                if (number !== 'FREE' && !this.gameState.calledNumbers.has(parseInt(number))) {
+                    allNumbersCalled = false;
+                }
             }
             
-            if (isComplete && !this.gameState.winningLines[cardId].includes(`row${row}`)) {
+            if (isComplete && allNumbersCalled && !this.gameState.winningLines[cardId].includes(`row${row}`)) {
                 winningLines.push(`row${row}`);
-                patterns.push({
-                    type: 'row',
-                    index: row,
-                    cells: rowPattern
-                });
+                this.winningPatternData[cardId].winningLines.push(`Row ${row + 1}`);
                 
                 rowCells.forEach(cell => {
                     const cellIndex = parseInt(cell.dataset.index);
@@ -240,27 +239,26 @@ class GamePage {
         // Check columns
         for (let col = 0; col < 5; col++) {
             let isComplete = true;
+            let allNumbersCalled = true;
             let colCells = [];
-            let colPattern = [];
             
             for (let row = 0; row < 5; row++) {
                 const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
                 const number = cell.dataset.number;
                 colCells.push(cell);
-                colPattern.push(cell.dataset.index);
                 
                 if (!allMarked.has(number === 'FREE' ? 'FREE' : parseInt(number))) {
                     isComplete = false;
                 }
+                
+                if (number !== 'FREE' && !this.gameState.calledNumbers.has(parseInt(number))) {
+                    allNumbersCalled = false;
+                }
             }
             
-            if (isComplete && !this.gameState.winningLines[cardId].includes(`col${col}`)) {
+            if (isComplete && allNumbersCalled && !this.gameState.winningLines[cardId].includes(`col${col}`)) {
                 winningLines.push(`col${col}`);
-                patterns.push({
-                    type: 'column',
-                    index: col,
-                    cells: colPattern
-                });
+                this.winningPatternData[cardId].winningLines.push(`Column ${String.fromCharCode(65 + col)}`);
                 
                 colCells.forEach(cell => {
                     const cellIndex = parseInt(cell.dataset.index);
@@ -274,25 +272,24 @@ class GamePage {
         
         // Check diagonal (top-left to bottom-right)
         let diagonal1Complete = true;
+        let diagonal1AllCalled = true;
         let diag1Cells = [];
-        let diag1Pattern = [];
         for (let i = 0; i < 5; i++) {
             const cell = document.querySelector(`[data-card="${cardId}"][data-row="${i}"][data-col="${i}"]`);
             const number = cell.dataset.number;
             diag1Cells.push(cell);
-            diag1Pattern.push(cell.dataset.index);
             
             if (!allMarked.has(number === 'FREE' ? 'FREE' : parseInt(number))) {
                 diagonal1Complete = false;
             }
+            
+            if (number !== 'FREE' && !this.gameState.calledNumbers.has(parseInt(number))) {
+                diagonal1AllCalled = false;
+            }
         }
-        if (diagonal1Complete && !this.gameState.winningLines[cardId].includes('diag1')) {
+        if (diagonal1Complete && diagonal1AllCalled && !this.gameState.winningLines[cardId].includes('diag1')) {
             winningLines.push('diag1');
-            patterns.push({
-                type: 'diagonal',
-                direction: 'top-left to bottom-right',
-                cells: diag1Pattern
-            });
+            this.winningPatternData[cardId].winningLines.push('Diagonal (Top-Left to Bottom-Right)');
             
             diag1Cells.forEach(cell => {
                 const cellIndex = parseInt(cell.dataset.index);
@@ -305,25 +302,24 @@ class GamePage {
         
         // Check diagonal (top-right to bottom-left)
         let diagonal2Complete = true;
+        let diagonal2AllCalled = true;
         let diag2Cells = [];
-        let diag2Pattern = [];
         for (let i = 0; i < 5; i++) {
             const cell = document.querySelector(`[data-card="${cardId}"][data-row="${i}"][data-col="${4 - i}"]`);
             const number = cell.dataset.number;
             diag2Cells.push(cell);
-            diag2Pattern.push(cell.dataset.index);
             
             if (!allMarked.has(number === 'FREE' ? 'FREE' : parseInt(number))) {
                 diagonal2Complete = false;
             }
+            
+            if (number !== 'FREE' && !this.gameState.calledNumbers.has(parseInt(number))) {
+                diagonal2AllCalled = false;
+            }
         }
-        if (diagonal2Complete && !this.gameState.winningLines[cardId].includes('diag2')) {
+        if (diagonal2Complete && diagonal2AllCalled && !this.gameState.winningLines[cardId].includes('diag2')) {
             winningLines.push('diag2');
-            patterns.push({
-                type: 'diagonal',
-                direction: 'top-right to bottom-left',
-                cells: diag2Pattern
-            });
+            this.winningPatternData[cardId].winningLines.push('Diagonal (Top-Right to Bottom-Left)');
             
             diag2Cells.forEach(cell => {
                 const cellIndex = parseInt(cell.dataset.index);
@@ -336,6 +332,7 @@ class GamePage {
         
         // Check four corners
         let cornersComplete = true;
+        let cornersAllCalled = true;
         const corners = [
             [0, 0],
             [0, 4],
@@ -343,25 +340,24 @@ class GamePage {
             [4, 4]
         ];
         let cornerCells = [];
-        let cornerPattern = [];
         
         corners.forEach(([row, col]) => {
             const cell = document.querySelector(`[data-card="${cardId}"][data-row="${row}"][data-col="${col}"]`);
             const number = cell.dataset.number;
             cornerCells.push(cell);
-            cornerPattern.push(cell.dataset.index);
             
             if (!allMarked.has(number === 'FREE' ? 'FREE' : parseInt(number))) {
                 cornersComplete = false;
             }
+            
+            if (number !== 'FREE' && !this.gameState.calledNumbers.has(parseInt(number))) {
+                cornersAllCalled = false;
+            }
         });
         
-        if (cornersComplete && !this.gameState.winningLines[cardId].includes('corners')) {
+        if (cornersComplete && cornersAllCalled && !this.gameState.winningLines[cardId].includes('corners')) {
             winningLines.push('corners');
-            patterns.push({
-                type: 'four-corners',
-                cells: cornerPattern
-            });
+            this.winningPatternData[cardId].winningLines.push('Four Corners');
             
             cornerCells.forEach(cell => {
                 const cellIndex = parseInt(cell.dataset.index);
@@ -370,11 +366,6 @@ class GamePage {
                     cell.classList.add('winning-corner');
                 }
             });
-        }
-        
-        // Save patterns for winner page
-        if (patterns.length > 0) {
-            this.winningPatternData[cardId].winningPatterns.push(...patterns);
         }
         
         winningLines.forEach(line => {
@@ -599,71 +590,6 @@ class GamePage {
     }
 
     checkForExistingCalls() {
-        // Don't generate initial calls - wait for ready animation
-    }
-
-    // NEW: Start with ready animation
-    startReadyAnimation() {
-        this.showReadyMessage();
-        
-        // After 3 seconds, start the game
-        setTimeout(() => {
-            this.startGame();
-        }, 3000);
-    }
-
-    // NEW: Show "READY" animation
-    showReadyMessage() {
-        const currentNumberDisplay = document.querySelector('.current-number-display');
-        const currentNumber = document.getElementById('currentNumber');
-        const numberLetter = document.getElementById('numberLetter');
-        
-        if (currentNumberDisplay && currentNumber && numberLetter) {
-            // Show "READY" animation
-            currentNumber.textContent = 'READY';
-            numberLetter.textContent = '';
-            this.currentNumberDisplay.textContent = 'GET READY!';
-            
-            // Style for ready animation
-            currentNumber.style.fontSize = '3.5rem';
-            currentNumber.style.color = '#4CAF50';
-            currentNumber.style.textShadow = '0 0 20px rgba(76, 175, 80, 0.8)';
-            currentNumber.style.animation = 'pulse 1s infinite';
-            
-            // Update timer display
-            this.nextCallTimer.textContent = '03';
-            
-            // Countdown from 3
-            let count = 3;
-            const countdownInterval = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    this.nextCallTimer.textContent = count.toString().padStart(2, '0');
-                } else {
-                    clearInterval(countdownInterval);
-                    this.nextCallTimer.textContent = '05';
-                }
-            }, 1000);
-        }
-    }
-
-    // NEW: Start game after ready animation
-    startGame() {
-        this.isGameActive = true;
-        this.readyAnimationActive = false;
-        
-        // Reset number display
-        const currentNumber = document.getElementById('currentNumber');
-        if (currentNumber) {
-            currentNumber.style.fontSize = '4rem';
-            currentNumber.style.animation = 'none';
-            currentNumber.textContent = '00';
-            currentNumber.style.color = '#00b4d8';
-        }
-        
-        this.startTimers();
-        
-        // Generate initial calls
         const initialCalls = 5;
         for (let i = 0; i < initialCalls; i++) {
             const number = this.generateNextNumber();
@@ -678,8 +604,6 @@ class GamePage {
         
         this.updateCalledNumbersDisplay();
         this.numbersCalled.textContent = this.gameState.calledNumbers.size;
-        
-        BingoUtils.showNotification('Game Started! Numbers will be called every 5 seconds.', 'success');
     }
 
     startTimers() {
@@ -698,8 +622,7 @@ class GamePage {
     }
 
     startCaller() {
-        // Start calling numbers immediately after ready
-        this.callNextNumber();
+        setTimeout(() => this.callNextNumber(), 1000);
         
         this.callIntervalId = setInterval(() => {
             this.callNextNumber();
@@ -827,15 +750,13 @@ class GamePage {
                     numbers: card1Numbers,
                     markedNumbers: markedNumbers1,
                     winningCells: this.winningPatternData.card1.winningCells,
-                    winningLines: this.winningPatternData.card1.winningLines,
-                    winningPatterns: this.winningPatternData.card1.winningPatterns
+                    winningLines: this.winningPatternData.card1.winningLines
                 },
                 card2: {
                     numbers: card2Numbers,
                     markedNumbers: markedNumbers2,
                     winningCells: this.winningPatternData.card2.winningCells,
-                    winningLines: this.winningPatternData.card2.winningLines,
-                    winningPatterns: this.winningPatternData.card2.winningPatterns
+                    winningLines: this.winningPatternData.card2.winningLines
                 }
             }
         };
@@ -852,11 +773,11 @@ class GamePage {
         
         this.sendWinData(winnerData);
         
-        // Redirect immediately to winner page
+        // Redirect immediately to winner page - FIXED
         console.log('Redirecting to winner page...');
         setTimeout(() => {
             window.location.href = 'winner.html';
-        }, 500);
+        }, 500); // Short delay to ensure data is saved
     }
 
     sendWinData(winnerData) {
